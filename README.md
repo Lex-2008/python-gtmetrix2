@@ -1,2 +1,162 @@
-# python-gtmetrix2
-A Python client library for GTmetrix REST API v2.0
+python-gtmetrix2
+================
+
+**python-gtmetrix2** is a Python client library for [GTmetrix][gtmetrix] REST API [v2.0][v2] (hence 2 in the name).
+
+[gtmetrix]: https://gtmetrix.com/
+[v2]: https://gtmetrix.com/api/docs/2.0/
+
+Inspired by the [other library][other].
+
+[other]: https://github.com/aisayko/python-gtmetrix
+
+Goals:
+-----
+
+- [x] [100% code coverage][cov]
+- [ ] drop-in compatibility with previous library
+- [ ] 100% coverage of [API][v2]
+- [ ] pip package
+- [ ] fancy docs
+- [ ] CI
+
+[cov]: htmlcov/index.html
+
+Installation:
+------------
+
+### via pip
+
+Not implemented yet
+
+### file copy
+
+Just copy the [python\_gtmetrix2.py][] file to your project directory and
+
+	import python_gtmetrix2
+
+[python_gtmetrix2.py]: python_gtmetrix2.py
+
+### Your favorite package manager
+
+I wish...
+
+Usage:
+-----
+
+Simplest example:
+
+	def test_url(url, api_key):
+		""" returns GTmetrix grade (one letter from A to F) for a given URL """
+		interface = python_gtmetrix2.Interface(api_key) # init
+		test = interface.start_test(url)                # start test
+		test.fetch(True)                                # wait for it to finish
+		report = test.getreport()                       # get test results
+		return report['attributes']['gtmetrix_grade']   # return one-letter result
+
+These five lines are explained below.
+
+
+### Interface
+
+Main entry point for this library is `Interface` class which is initialized like this:
+
+	interface = python_gtmetrix2.Interface(api_key)
+
+where `api_key` is your GTmetrix API key.
+
+Interface lets you start tests, like this:
+
+	test = interface.start_test(url)
+
+where `url` is the url you want to test. Optionally, you can pass extra arguments, like this:
+
+	test = interface.start_test(url, report='none', adblock=1)
+
+Full list of available parameters is available in [GTmetrix API documentation][start], section "Test Parameters".
+This call returns an object of type `Test`.
+Note that this call does **not** wait for the test to finish.
+To know how to wait for the test to finish, read on.
+
+[start]: https://gtmetrix.com/api/docs/2.0/#api-test-start
+
+
+You can also query for tests started within last 24 hours:
+
+	tests = interface.list_tests()
+
+This call returns a `list` of objects of type `Test`.
+
+### Test
+
+Object of type `Test` has two useful methods: `fetch` and `getreport`.
+`fetch` updates test information from GTmetrix API server and has an optional argument `wait_for_completion`,
+which, when set to `True`, instructs this method to wait until the test finishes.
+Like this:
+
+	test.fetch(True)
+
+If the test completes successfully (which happens most of the time),
+you can use `getreport` method to retrieve test results in the form of `Report` object.
+
+Like this:
+
+	report = test.getreport()
+
+Note that `report` might be `None` if test did not finish successfully
+(for example, due to connection or certificate error).
+
+### Report
+
+For now, report doesn't have anything useful,
+but you can access all its data.
+It's basically a `dict` containing all data returned by GTmetrix API.
+You can consult all possible values in the [docs][repo]
+
+[repo]: https://gtmetrix.com/api/docs/2.0/#api-report-by-id
+
+
+Testing:
+-------
+
+For automated tests, we use `pytest` with [httpserver][] and aim for 100% test coverage
+(untested code goes to a separate file which is not included into the coverage metric)
+
+[httpserver]: https://pypi.org/project/pytest-httpserver/
+
+To run just tests, execute pytest like this:
+
+	$ pytest tests.py
+	======================== test session starts =========================
+	platform linux -- Python 3.9.6, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
+	rootdir: /home/lex/git/python-gtmetrix2
+	plugins: requests-mock-1.9.3, cov-2.12.1, httpserver-1.0.0
+	collected 15 items                                                   
+
+	tests.py ...............                                       [100%]
+
+	========================= 15 passed in 0.80s =========================
+
+To measure coverage, install [coverage][] and run it like this:
+
+[coverage]: https://pypi.org/project/coverage/
+
+	$ coverage run -m pytest tests.py
+
+Its output is same as above. To show actual coverage values, run:
+
+	$ coverage report
+	Name                  Stmts   Miss  Cover
+	-----------------------------------------
+	python_gtmetrix2.py     155      0   100%
+	tests.py                227      0   100%
+	-----------------------------------------
+	TOTAL                   382      0   100%
+
+To generate a coverage report in html format, run:
+
+	$ coverage html
+
+It will output nothing, but update files in [htmlcov][] directory.
+
+[htmlcov]: htmlcov
