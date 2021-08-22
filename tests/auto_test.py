@@ -6,7 +6,7 @@ import urllib.request
 import pytest
 from pytest_httpserver import HTTPServer
 
-import python_gtmetrix2
+from src import python_gtmetrix2
 
 
 class Sleeper:
