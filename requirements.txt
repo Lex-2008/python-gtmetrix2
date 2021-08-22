@@ -7,3 +7,5 @@
 
 pytest
 pytest-httpserver
+coverage
+codecov
