@@ -1,0 +1,9 @@
+################################# NOTE ############################
+###                                                             ###
+### Note that these packages are required for DEVELOPMENT only. ###
+### For normal use, this library depends on nothing.            ###
+###                                                             ###
+################################# NOTE ############################
+
+pytest
+pytest-httpserver
