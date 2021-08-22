@@ -5,7 +5,10 @@
 ###                                                             ###
 ################################# NOTE ############################
 
+### required to run tests
 pytest
 pytest-httpserver
+
+### required to check and report coverage
 coverage
 codecov
