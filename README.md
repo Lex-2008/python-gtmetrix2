@@ -3,6 +3,10 @@ python-gtmetrix2
 
 **python-gtmetrix2** is a Python client library for [GTmetrix][gtmetrix] REST API [v2.0][v2] (hence 2 in the name).
 
+[![Build Status](https://app.travis-ci.com/Lex-2008/python-gtmetrix2.svg?branch=main)](https://app.travis-ci.com/Lex-2008/python-gtmetrix2)
+[![codecov](https://codecov.io/gh/Lex-2008/python-gtmetrix2/branch/main/graph/badge.svg?token=N8P5Z08497)](https://codecov.io/gh/Lex-2008/python-gtmetrix2)
+
+
 [gtmetrix]: https://gtmetrix.com/
 [v2]: https://gtmetrix.com/api/docs/2.0/
 
@@ -13,14 +17,15 @@ Inspired by the [other library][other].
 Goals:
 -----
 
+- [x] [CI][]
 - [x] [100% code coverage][cov]
 - [ ] drop-in compatibility with previous library
 - [ ] 100% coverage of [API][v2]
 - [ ] pip package
 - [ ] fancy docs
-- [ ] CI
 
-[cov]: htmlcov/index.html
+[CI]: https://app.travis-ci.com/github/Lex-2008/python-gtmetrix2
+[cov]: https://app.codecov.io/gh/Lex-2008/python-gtmetrix2/
 
 Installation:
 ------------
@@ -31,11 +36,11 @@ Not implemented yet
 
 ### file copy
 
-Just copy the [python\_gtmetrix2.py][] file to your project directory and
+Just copy the [python\_gtmetrix2.py][py] file to your project directory and
 
 	import python_gtmetrix2
 
-[python_gtmetrix2.py]: python_gtmetrix2.py
+[py]: python_gtmetrix2.py
 
 ### Your favorite package manager
 
