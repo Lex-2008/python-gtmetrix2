@@ -6,6 +6,10 @@ python-gtmetrix2
 [![Build Status](https://app.travis-ci.com/Lex-2008/python-gtmetrix2.svg?branch=main)](https://app.travis-ci.com/Lex-2008/python-gtmetrix2)
 [![codecov](https://codecov.io/gh/Lex-2008/python-gtmetrix2/branch/main/graph/badge.svg?token=N8P5Z08497)](https://codecov.io/gh/Lex-2008/python-gtmetrix2)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/python-gtmetrix2)
+![PyPI - License](https://img.shields.io/pypi/l/python-gtmetrix2)
+![PyPI - Status](https://img.shields.io/pypi/status/python-gtmetrix2)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/python-gtmetrix2)
 
 
 [gtmetrix]: https://gtmetrix.com/
@@ -20,28 +24,29 @@ Goals:
 
 - [x] [CI][]
 - [x] [100% code coverage][cov]
+- [x] [pip package][pip]
 - [ ] drop-in compatibility with previous library
 - [ ] 100% coverage of [API][v2]
-- [ ] pip package
 - [ ] fancy docs
 
 [CI]: https://app.travis-ci.com/github/Lex-2008/python-gtmetrix2
 [cov]: https://app.codecov.io/gh/Lex-2008/python-gtmetrix2/
+[pip]: https://test.pypi.org/project/python-gtmetrix2/
 
 Installation:
 ------------
 
 ### via pip
 
-Not implemented yet
+	pip install python-gtmetrix2
 
 ### file copy
 
-Just copy the [python\_gtmetrix2.py][py] file to your project directory and
+Just download [this][py] file, save it as `python_gtmetrix2.py` in your project directory and
 
 	import python_gtmetrix2
 
-[py]: python_gtmetrix2.py
+[py]: python_gtmetrix2/__init__.py
 
 ### Your favorite package manager
 
@@ -125,14 +130,16 @@ You can consult all possible values in the [docs][repo]
 Testing:
 -------
 
-For automated tests, we use `pytest` with [httpserver][] and aim for 100% test coverage
-(untested code goes to a separate file which is not included into the coverage metric)
+Autotests are automated by [Travis][CI] in clouds, so to run them you can just create a PR.
+
+To run tests locally, you need to install [pytest][] with [httpserver][].
 
 [httpserver]: https://pypi.org/project/pytest-httpserver/
+[pytest]: https://pypi.org/project/pytest/
 
-To run just tests, execute pytest like this:
+To run tests, execute pytest like this:
 
-	$ pytest tests.py
+	$ pytest
 	======================== test session starts =========================
 	platform linux -- Python 3.9.6, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
 	rootdir: /home/lex/git/python-gtmetrix2
@@ -143,11 +150,12 @@ To run just tests, execute pytest like this:
 
 	========================= 15 passed in 0.80s =========================
 
+
 To measure coverage, install [coverage][] and run it like this:
 
 [coverage]: https://pypi.org/project/coverage/
 
-	$ coverage run -m pytest tests.py
+	$ coverage run -m pytest
 
 Its output is same as above. To show actual coverage values, run:
 
@@ -163,6 +171,7 @@ To generate a coverage report in html format, run:
 
 	$ coverage html
 
-It will output nothing, but update files in [htmlcov][] directory.
+It will output nothing, but create nice HTML report in the htmlcov directory.
 
-[htmlcov]: htmlcov
+Tis project aims for 100% code coverage by tests, so just mark untested lines
+with `pragma: no cover` and be done with it, lol.

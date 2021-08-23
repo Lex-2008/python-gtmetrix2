@@ -16,9 +16,7 @@ deploy:
   username: "__token__"
   edge: true # opt in to dpl v2
   distributions: "sdist bdist_wheel"
-  server: "https://test.pypi.org/legacy/"
-  skip_existing: true
   on:
     all_branches: true
     python: "3.9"
-  #   tags: true
+      #tags: true
