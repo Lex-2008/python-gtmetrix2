@@ -31,7 +31,8 @@ Goals:
 
 [CI]: https://app.travis-ci.com/github/Lex-2008/python-gtmetrix2
 [cov]: https://app.codecov.io/gh/Lex-2008/python-gtmetrix2/
-[pip]: https://test.pypi.org/project/python-gtmetrix2/
+[pip]: https://pypi.org/project/python-gtmetrix2/
+
 
 Installation:
 ------------
@@ -42,15 +43,16 @@ Installation:
 
 ### file copy
 
-Just download [this][py] file, save it as `python_gtmetrix2.py` in your project directory and
+Just save [this][py] file as `python_gtmetrix2.py` in your project directory and
 
 	import python_gtmetrix2
 
-[py]: python_gtmetrix2/__init__.py
+[py]: https://github.com/Lex-2008/python-gtmetrix2/blob/main/src/python_gtmetrix2/__init__.py
 
 ### Your favorite package manager
 
 I wish...
+
 
 Usage:
 -----
@@ -84,12 +86,12 @@ where `url` is the url you want to test. Optionally, you can pass extra argument
 
 	test = interface.start_test(url, report='none', adblock=1)
 
-Full list of available parameters is available in [GTmetrix API documentation][start], section "Test Parameters".
+Full list of available parameters is available in [GTmetrix API documentation][docs-start], section "Test Parameters".
 This call returns an object of type `Test`.
 Note that this call does **not** wait for the test to finish.
 To know how to wait for the test to finish, read on.
 
-[start]: https://gtmetrix.com/api/docs/2.0/#api-test-start
+[docs-start]: https://gtmetrix.com/api/docs/2.0/#api-test-start
 
 
 You can also query for tests started within last 24 hours:
@@ -119,12 +121,13 @@ Note that `report` might be `None` if test did not finish successfully
 
 ### Report
 
-For now, report doesn't have anything useful,
+For now, report doesn't provide any special functionality,
 but you can access all its data.
 It's basically a `dict` containing all data returned by GTmetrix API.
-You can consult all possible values in the [docs][repo]
+You can consult all possible values in the [docs][docs-report].
 
-[repo]: https://gtmetrix.com/api/docs/2.0/#api-report-by-id
+[docs-report]: https://gtmetrix.com/api/docs/2.0/#api-report-by-id
+
 
 
 Testing:
@@ -132,21 +135,21 @@ Testing:
 
 Autotests are automated by [Travis][CI] in clouds, so to run them you can just create a PR.
 
-To run tests locally, you need to install [pytest][] with [httpserver][].
+To run tests locally, you need to install [pytest][] with [httpserver][]
+and execute `pytest` in the root of this repository like this:
 
 [httpserver]: https://pypi.org/project/pytest-httpserver/
 [pytest]: https://pypi.org/project/pytest/
 
-To run tests, execute pytest like this:
 
-	$ pytest
+	~/git/python-gtmetrix2$ pytest tests
 	======================== test session starts =========================
 	platform linux -- Python 3.9.6, pytest-6.2.4, py-1.10.0, pluggy-0.13.1
 	rootdir: /home/lex/git/python-gtmetrix2
 	plugins: requests-mock-1.9.3, cov-2.12.1, httpserver-1.0.0
 	collected 15 items                                                   
 
-	tests.py ...............                                       [100%]
+	tests/auto_test.py ...............                             [100%]
 
 	========================= 15 passed in 0.80s =========================
 
@@ -155,23 +158,24 @@ To measure coverage, install [coverage][] and run it like this:
 
 [coverage]: https://pypi.org/project/coverage/
 
-	$ coverage run -m pytest
+	~/git/python-gtmetrix2$ coverage run -m pytest tests
 
 Its output is same as above. To show actual coverage values, run:
 
-	$ coverage report
-	Name                  Stmts   Miss  Cover
-	-----------------------------------------
-	python_gtmetrix2.py     155      0   100%
-	tests.py                227      0   100%
-	-----------------------------------------
-	TOTAL                   382      0   100%
+	~/git/python-gtmetrix2$ coverage report --skip-empty
+	Name                               Stmts   Miss  Cover
+	------------------------------------------------------
+	src/python_gtmetrix2/__init__.py     155      0   100%
+	tests/auto_test.py                   227      0   100%
+	------------------------------------------------------
+	TOTAL                                382      0   100%
 
 To generate a coverage report in html format, run:
 
-	$ coverage html
+	~/git/python-gtmetrix2$ coverage html --skip-empty
 
 It will output nothing, but create nice HTML report in the htmlcov directory.
 
 Tis project aims for 100% code coverage by tests, so just mark untested lines
 with `pragma: no cover` and be done with it, lol.
+
