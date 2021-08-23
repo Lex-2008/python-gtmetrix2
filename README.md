@@ -128,6 +128,11 @@ You can consult all possible values in the [docs][docs-report].
 
 [docs-report]: https://gtmetrix.com/api/docs/2.0/#api-report-by-id
 
+### More examples
+
+are in [examples][] directory.
+
+[examples]: https://github.com/Lex-2008/python-gtmetrix2/tree/main/examples
 
 
 Testing:
