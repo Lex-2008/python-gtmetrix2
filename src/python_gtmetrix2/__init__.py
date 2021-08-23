@@ -1,7 +1,11 @@
-##### Base exceptions ####
+import json
+import urllib.request
+import time
 
 
 class BaseGTmetrixAPIException(Exception):
+    """Base class for all exceptions."""
+
     def __init__(self, request, response, data, extra=None):
         self.request = request
         self.response = response
@@ -10,7 +14,7 @@ class BaseGTmetrixAPIException(Exception):
 
 
 class GTmetrixAPIFailureException(BaseGTmetrixAPIException):
-    """API returned an error."""
+    """API returned unexpected result."""
 
     def __init__(self, message, request, response, data, extra=None):
         super().__init__(request, response, data, extra)
@@ -22,18 +26,6 @@ class GTmetrixAPIErrorException(BaseGTmetrixAPIException):
 
     pass
 
-
-import json
-import urllib.request
-import time
-
-# TODO: __getattr__ to access entries within ["attributes"]
-# TODO: test auth
-# TODO: Interface.[Test/Report].from[ID/Slug/URL]('...')
-
-# real API tests:
-# delete report and fetch test
-# delete test
 
 # from https://stackoverflow.com/a/52086806
 class NoRedirect(urllib.request.HTTPRedirectHandler):

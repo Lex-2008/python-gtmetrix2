@@ -1,5 +1,3 @@
-# Run this code as 'pytest example_pytest.py'
-
 import time
 import urllib.request
 
