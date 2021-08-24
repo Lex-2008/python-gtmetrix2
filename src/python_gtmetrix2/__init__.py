@@ -70,10 +70,7 @@ class Requestor:
             # However, it might be helpful in CI tests
             if "valid_status" in kwargs:
                 kwargs["valid_statuses"] = [kwargs["valid_status"]]
-            if (
-                "valid_statuses" in kwargs
-                and response.status not in kwargs["valid_statuses"]
-            ):
+            if "valid_statuses" in kwargs and response.status not in kwargs["valid_statuses"]:
                 raise GTmetrixAPIFailureException(
                     ("API returned invalid status: %s" % response.status),
                     request,
@@ -83,23 +80,17 @@ class Requestor:
         data = response.read()
         if len(data) == 0:
             if kwargs.get("require_data", True):
-                raise GTmetrixAPIFailureException(
-                    "API returned empty response", request, response, data
-                )
+                raise GTmetrixAPIFailureException("API returned empty response", request, response, data)
             else:
                 return (response, None)
         try:
             json_data = json.loads(data.decode())
         except (json.JSONDecodeError, UnicodeError) as e:
-            raise GTmetrixAPIFailureException(
-                "API returned unparsable JSON", request, response, data
-            ) from e
+            raise GTmetrixAPIFailureException("API returned unparsable JSON", request, response, data) from e
         if "errors" in json_data:
             if __debug__:
                 if not isinstance(json_data["errors"], list):
-                    raise GTmetrixAPIFailureException(
-                        "API returned non-list of errors", request, response, json_data
-                    )
+                    raise GTmetrixAPIFailureException("API returned non-list of errors", request, response, json_data)
                 if len(json_data["errors"]) < 1:
                     raise GTmetrixAPIFailureException(
                         "API returned empty list of errors",
@@ -224,9 +215,7 @@ class Test(Object):
     def getreport(self):
         if self._report is None:
             if "links" in self and "report" in self["links"]:
-                self._report = Report.fromURL(
-                    self._requestor, self["links"]["report"], self._sleep
-                )
+                self._report = Report.fromURL(self._requestor, self["links"]["report"], self._sleep)
         return self._report
 
     @classmethod
@@ -237,13 +226,9 @@ class Test(Object):
         (response, response_data) = requestor.request(url)
         if __debug__:
             if not "data" in response_data:
-                raise GTmetrixAPIFailureException(
-                    "API returned no data for a test", None, response, response_data
-                )
+                raise GTmetrixAPIFailureException("API returned no data for a test", None, response, response_data)
             if not dict_is_test(response_data["data"]):
-                raise GTmetrixAPIFailureException(
-                    "API returned non-test for a test", None, response, response_data
-                )
+                raise GTmetrixAPIFailureException("API returned non-test for a test", None, response, response_data)
         return Test(requestor, response_data["data"], sleep_function)
 
 
@@ -256,9 +241,7 @@ class Report(Object):
         (response, response_data) = requestor.request(url)
         if __debug__:
             if not "data" in response_data:
-                raise GTmetrixAPIFailureException(
-                    "API returned no data for a report", None, response, response_data
-                )
+                raise GTmetrixAPIFailureException("API returned no data for a report", None, response, response_data)
             if not dict_is_report(response_data["data"]):
                 raise GTmetrixAPIFailureException(
                     "API returned non-report for a report",

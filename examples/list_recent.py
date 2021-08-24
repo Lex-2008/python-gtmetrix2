@@ -12,9 +12,7 @@ def main(api_key):
     tests = interface.list_tests()
 
     if len(tests) == 0:
-        print(
-            "No tests found! Note that only tests started within last 24 hours are available via this API."
-        )
+        print("No tests found! Note that only tests started within last 24 hours are available via this API.")
         return
 
     for test in tests:

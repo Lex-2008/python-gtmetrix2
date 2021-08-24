@@ -5,7 +5,7 @@ python-gtmetrix2
 
 [![Build Status](https://app.travis-ci.com/Lex-2008/python-gtmetrix2.svg?branch=main)](https://app.travis-ci.com/Lex-2008/python-gtmetrix2)
 [![codecov](https://codecov.io/gh/Lex-2008/python-gtmetrix2/branch/main/graph/badge.svg?token=N8P5Z08497)](https://codecov.io/gh/Lex-2008/python-gtmetrix2)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-green.png)](https://github.com/psf/black)
+[![Code style: black](https://img.shields.io/badge/code_style-black_--l_118-green.svg)](https://github.com/psf/black)
 [![License: MIT](https://img.shields.io/github/license/Lex-2008/python-gtmetrix2)](https://github.com/Lex-2008/python-gtmetrix2/blob/main/LICENSE)
 
 [![PyPI - Latest Version](https://img.shields.io/pypi/v/python-gtmetrix2)][pip]
