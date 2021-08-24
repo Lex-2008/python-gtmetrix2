@@ -5,19 +5,20 @@ python-gtmetrix2
 
 [![Build Status](https://app.travis-ci.com/Lex-2008/python-gtmetrix2.svg?branch=main)](https://app.travis-ci.com/Lex-2008/python-gtmetrix2)
 [![codecov](https://codecov.io/gh/Lex-2008/python-gtmetrix2/branch/main/graph/badge.svg?token=N8P5Z08497)](https://codecov.io/gh/Lex-2008/python-gtmetrix2)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/python-gtmetrix2)
-![PyPI - License](https://img.shields.io/pypi/l/python-gtmetrix2)
-![PyPI - Status](https://img.shields.io/pypi/status/python-gtmetrix2)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/python-gtmetrix2)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-green.png)](https://github.com/psf/black)
+[![License: MIT](https://img.shields.io/github/license/Lex-2008/python-gtmetrix2)](https://github.com/Lex-2008/python-gtmetrix2/blob/main/LICENSE)
+
+[![PyPI - Latest Version](https://img.shields.io/pypi/v/python-gtmetrix2)][pip]
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/python-gtmetrix2)][pip]
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/python-gtmetrix2)][pip]
 
 
 [gtmetrix]: https://gtmetrix.com/
 [v2]: https://gtmetrix.com/api/docs/2.0/
+[1]: https://github.com/aisayko/python-gtmetrix
 
-Inspired by the [other library][other].
+Inspired by the [library with a similar name][1].
 
-[other]: https://github.com/aisayko/python-gtmetrix
 
 Goals:
 -----
@@ -25,9 +26,9 @@ Goals:
 - [x] [CI][]
 - [x] [100% code coverage][cov]
 - [x] [pip package][pip]
-- [ ] drop-in compatibility with previous library
 - [ ] 100% coverage of [API][v2]
 - [ ] fancy docs
+- [ ] drop-in compatibility with the [library with a similar name][1]
 
 [CI]: https://app.travis-ci.com/github/Lex-2008/python-gtmetrix2
 [cov]: https://app.codecov.io/gh/Lex-2008/python-gtmetrix2/
