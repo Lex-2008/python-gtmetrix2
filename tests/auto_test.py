@@ -397,6 +397,41 @@ def test_interface_list_positive(httpserver: HTTPServer):
     assert all((isinstance(test, python_gtmetrix2.Test) for test in tests))
 
 
+def test_interface_list_args(httpserver: HTTPServer):
+    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+
+    httpserver.expect_oneshot_request(
+        "/tests", query_string="sort=this"
+    ).respond_with_json({"data": []})
+    with httpserver.wait():
+        tests = interface.list_tests(sort="this")
+    assert isinstance(tests, list)
+    assert len(tests) == 0
+
+    httpserver.expect_oneshot_request(
+        "/tests", query_string="filter[this]=that"
+    ).respond_with_json({"data": []})
+    with httpserver.wait():
+        tests = interface.list_tests(filter={"this": "that"})
+    assert isinstance(tests, list)
+    assert len(tests) == 0
+
+    httpserver.expect_oneshot_request(
+        "/tests",
+        query_string={
+            "sort": "complex",
+            "filter[this]": "that",
+            "filter[key]": "value",
+        },
+    ).respond_with_json({"data": []})
+    with httpserver.wait():
+        tests = interface.list_tests(
+            sort="complex", filter={"this": "that", "key": "value"}
+        )
+    assert isinstance(tests, list)
+    assert len(tests) == 0
+
+
 def test_interface_list_negative(httpserver: HTTPServer):
     interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
 

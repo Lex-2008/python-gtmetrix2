@@ -307,10 +307,37 @@ class Interface:
         # TODO: do something with credits_left and credits_used
         return test
 
-    def list_tests(self):
-        # TODO: sort, filter, page(?)
-        (response, response_data) = self.requestor.request("tests")
-        # TODO: pagination
+    def list_tests(self, sort=None, filter=None, page_number=0):
+        """`sort` is a string, one of "created", "started", "finished",
+            optionally prefixed with "-".
+        `filter` is a dict of key/value pairs,
+            where key is one of "state, created, started, finished, browser, location",
+                optionally postfixed with one of ":eq, :lt, :lte, :gt, :gte"
+            and value is, well, value (string or number).
+        TODO: examples would be good.
+        """
+        query = []
+        if sort is not None:
+            query.append("sort=" + sort)
+        if filter is not None:
+            query.extend(["filter[%s]=%s" % (k, v) for (k, v) in filter.items()])
+
+        (response, response_data) = self.requestor.request("tests?" + "&".join(query))
+        # TODO: pagination:
+        # if there is link[next]:
+        #   repeat with page_number=N+1
+        # pagination v2:
+        # if there is link[next], then:
+        #  repeat with page[number]=2 (up to 100th)
+        #  if there is link[next], then
+        #    repeat with page[size=100]&page[number]=2 (up to 200th)
+        #    if there is link[next], then
+        #      repeat with page[size=200]&page[number]=2 (up to 400th)
+        #      if there is link[next], then
+        #        repeat with page[size=400]&page[number]=2 (up to 800th)
+        #        # recursion stops here
+        #        while there is link[next]:
+        #          repeat with page[size=400]&page[number]=(N++)
         if __debug__:
             if not "data" in response_data:
                 raise GTmetrixAPIFailureException(
