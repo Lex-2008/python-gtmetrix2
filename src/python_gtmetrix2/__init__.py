@@ -184,6 +184,19 @@ def dict_is_report(data):
     )
 
 
+def dict_is_user(data):
+    return (
+        isinstance(data, dict)
+        and "type" in data
+        and data["type"] == "user"
+        and "id" in data
+        and "attributes" in data
+        and isinstance(data["attributes"], dict)
+        and "api_credits" in data["attributes"]
+        and "api_refill" in data["attributes"]
+    )
+
+
 class Object(dict):
     def __init__(self, requestor, data, sleep_function=time.sleep):
         super().__init__(**data)
@@ -391,3 +404,17 @@ class Interface:
                 )
         tests = [Test(self._requestor, test_data) for test_data in response_data["data"]]
         return tests
+
+    def status(self):
+        (response, response_data) = self._requestor.request("status")
+        if __debug__:
+            if not "data" in response_data:
+                raise GTmetrixAPIFailureException("API returned no data for status", None, response, response_data)
+            if not dict_is_user(response_data["data"]):
+                raise GTmetrixAPIFailureException(
+                    "API returned non-user for status",
+                    None,
+                    response,
+                    response_data,
+                )
+        return response_data["data"]

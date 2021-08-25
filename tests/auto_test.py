@@ -469,3 +469,30 @@ def test_interface_list_negative(httpserver: HTTPServer):
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
             interface.list_tests()
+
+
+def test_interface_status_positive(httpserver: HTTPServer):
+    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+    httpserver.expect_oneshot_request("/status").respond_with_json(
+        {"data": {"type": "user", "id": "a", "attributes": {"api_credits": 1.2, "api_refill": 3}}}
+    )
+    with httpserver.wait():
+        status = interface.status()
+    assert isinstance(status, dict)
+    assert status["type"] == "user"
+    assert status["attributes"]["api_credits"] == 1.2
+    assert status["attributes"]["api_refill"] == 3
+
+
+def test_interface_status_negative(httpserver: HTTPServer):
+    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+
+    httpserver.expect_oneshot_request("/status").respond_with_json({})
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
+            interface.status()
+
+    httpserver.expect_oneshot_request("/status").respond_with_json({"data": 12})
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-user"):
+            interface.status()
