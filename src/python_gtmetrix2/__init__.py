@@ -317,20 +317,12 @@ class Interface:
 
         (response, response_data) = self._requestor.request("tests?" + "&".join(query))
         # TODO: pagination:
-        # if there is link[next]:
-        #   repeat with page_number=N+1
-        # pagination v2:
-        # if there is link[next], then:
-        #  repeat with page[number]=2 (up to 100th)
-        #  if there is link[next], then
-        #    repeat with page[size=100]&page[number]=2 (up to 200th)
-        #    if there is link[next], then
-        #      repeat with page[size=200]&page[number]=2 (up to 400th)
-        #      if there is link[next], then
-        #        repeat with page[size=400]&page[number]=2 (up to 800th)
-        #        # recursion stops here
-        #        while there is link[next]:
-        #          repeat with page[size=400]&page[number]=(N++)
+        # next_link=first_link
+        # results=[]
+        # while next_link:
+        #  request
+        #  results.extend(request_data...)
+        #  next_link=request_data.get(..., None)
         if __debug__:
             if not "data" in response_data:
                 raise GTmetrixAPIFailureException(
