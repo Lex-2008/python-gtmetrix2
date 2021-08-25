@@ -1,4 +1,5 @@
 import time
+import tempfile
 import urllib.request
 
 import pytest
@@ -290,6 +291,79 @@ def test_report_fromurl_negative(httpserver: HTTPServer):
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-report"):
             report = python_gtmetrix2.Report.fromURL(requestor, httpserver.url_for("oneshot"))
+
+
+def test_report_delete(httpserver: HTTPServer):
+    requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""))
+    report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {}}
+    report = python_gtmetrix2.Report(requestor, report_json)
+    httpserver.expect_oneshot_request("/reports/b", method="DELETE").respond_with_data("")
+    with httpserver.wait():
+        report.delete()
+
+
+def test_report_retest_positive(httpserver: HTTPServer):
+    requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""))
+    report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {}}
+    test_json = {
+        "data": {
+            "type": "test",
+            "id": "a",
+            "attributes": {"n": 2},
+        }
+    }
+    report = python_gtmetrix2.Report(requestor, report_json)
+    httpserver.expect_oneshot_request("/reports/b/retest", method="POST").respond_with_json(test_json)
+    with httpserver.wait():
+        test = report.retest()
+    assert test["type"] == "test"
+    assert test["attributes"]["n"] == 2
+
+
+def test_report_retest_negative(httpserver: HTTPServer):
+    requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""))
+    report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {}}
+    report = python_gtmetrix2.Report(requestor, report_json)
+    httpserver.expect_oneshot_request("/reports/b/retest", method="POST").respond_with_json({})
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
+            report.retest()
+
+    httpserver.expect_oneshot_request("/reports/b/retest", method="POST").respond_with_json({"data": 12})
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
+            report.retest()
+
+
+def test_report_getresource(httpserver: HTTPServer, tmp_path):
+    requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""))
+    report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {}}
+    report = python_gtmetrix2.Report(requestor, report_json)
+
+    httpserver.expect_oneshot_request("/reports/b/resources/a").respond_with_data("x")
+    with httpserver.wait():
+        result = report.getresource("a")
+    assert result == b"x"
+
+    httpserver.expect_oneshot_request("/reports/b/resources/a").respond_with_data("x")
+    with httpserver.wait():
+        with tempfile.TemporaryFile(dir=tmp_path) as fp:
+            report.getresource("a", fp)
+            fp.seek(0)
+            result = fp.read()
+    assert result == b"x"
+
+    httpserver.expect_oneshot_request("/reports/b/resources/a").respond_with_data("x")
+    with httpserver.wait():
+        # print(tmp_path)
+        # print(dir(tmp_path))
+        (_, tmpfile) = tempfile.mkstemp(dir=str(tmp_path))
+        tmpfile = str(tmpfile)
+        report.getresource("a", tmpfile)
+        with open(tmpfile) as fp:
+            fp.seek(0)
+            result = fp.read()
+    assert result == "x"
 
 
 def test_interface_start_positive(httpserver: HTTPServer):

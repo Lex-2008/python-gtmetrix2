@@ -1,6 +1,7 @@
 import json
-import urllib.request
+import shutil
 import time
+import urllib.request
 
 
 class BaseGTmetrixAPIException(Exception):
@@ -260,6 +261,49 @@ class Report(Object):
                     response_data,
                 )
         return Report(requestor, response_data["data"], sleep_function)
+
+    def delete(self):
+        self._requestor.request("reports/" + self["id"], method="DELETE", return_data=False)
+
+    def retest(self):
+        (response, response_data) = self._requestor.request("reports/%s/retest" % self["id"], method="POST")
+        # TODO: this is same as when starting a test
+        if __debug__:
+            if not "data" in response_data:
+                raise GTmetrixAPIFailureException(
+                    "API returned no data for a retest",
+                    None,
+                    response,
+                    response_data,
+                )
+            if not dict_is_test(response_data["data"]):
+                raise GTmetrixAPIFailureException(
+                    "API returned non-test for a retest",
+                    None,
+                    response,
+                    response_data,
+                )
+        test = Test(self._requestor, response_data["data"])
+        return test
+
+    def getresource(self, name, destination=None):
+        (response, response_data) = self._requestor.request(
+            "reports/%s/resources/%s" % (self["id"], name),
+            follow_redirects=True,
+            return_data=False,
+        )
+        if destination is None:
+            data = b""
+            chunk = response.read()
+            while chunk:
+                data += chunk
+                chunk = response.read()
+            return data
+        elif isinstance(destination, str):
+            with open(destination, "wb") as destination_file:
+                shutil.copyfileobj(response, destination_file)
+        else:
+            shutil.copyfileobj(response, destination)
 
 
 class Interface:
