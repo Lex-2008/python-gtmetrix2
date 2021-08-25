@@ -383,7 +383,7 @@ def test_interface_start_positive(httpserver: HTTPServer):
             "data": {
                 "type": "test",
                 "id": "a",
-                "attributes": {"source": "api", "state": "queued", "key": "value"},
+                "attributes": {"source": "api"},
             }
         },
         status=202,
@@ -392,7 +392,7 @@ def test_interface_start_positive(httpserver: HTTPServer):
     with httpserver.wait():
         test = interface.start_test("example.com", key="value")
     assert test["type"] == "test"
-    assert test["attributes"]["key"] == "value"
+    assert test["attributes"]["source"] == "api"
 
 
 def test_interface_start_negative(httpserver: HTTPServer):
@@ -456,16 +456,16 @@ def test_interface_list_negative(httpserver: HTTPServer):
     httpserver.expect_oneshot_request("/tests").respond_with_json({})
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
-            tests = interface.list_tests()
+            interface.list_tests()
 
     httpserver.expect_oneshot_request("/tests").respond_with_json({"data": 12})
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-list"):
-            tests = interface.list_tests()
+            interface.list_tests()
 
     httpserver.expect_oneshot_request("/tests").respond_with_json(
         {"data": [{"type": "test", "id": "a", "attributes": {}}, {}]}
     )
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
-            tests = interface.list_tests()
+            interface.list_tests()
