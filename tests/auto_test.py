@@ -347,7 +347,7 @@ def test_report_getresource(httpserver: HTTPServer, tmp_path):
 
     httpserver.expect_oneshot_request("/reports/b/resources/a").respond_with_data("x")
     with httpserver.wait():
-        with tempfile.TemporaryFile(dir=tmp_path) as fp:
+        with tempfile.TemporaryFile(dir=str(tmp_path)) as fp:
             report.getresource("a", fp)
             fp.seek(0)
             result = fp.read()
@@ -355,8 +355,6 @@ def test_report_getresource(httpserver: HTTPServer, tmp_path):
 
     httpserver.expect_oneshot_request("/reports/b/resources/a").respond_with_data("x")
     with httpserver.wait():
-        # print(tmp_path)
-        # print(dir(tmp_path))
         (_, tmpfile) = tempfile.mkstemp(dir=str(tmp_path))
         tmpfile = str(tmpfile)
         report.getresource("a", tmpfile)
