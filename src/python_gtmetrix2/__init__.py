@@ -269,13 +269,13 @@ class Interface:
         base_url="https://gtmetrix.com/api/2.0/",
         sleep_function=time.sleep,
     ):
-        self.requestor = Requestor(api_key, base_url, sleep_function)
+        self._requestor = Requestor(api_key, base_url, sleep_function)
 
     def start_test(self, url, **attributes):
         """Start a Test"""
         attributes["url"] = url
         data = {"type": "test", "attributes": attributes}
-        (response, response_data) = self.requestor.request(
+        (response, response_data) = self._requestor.request(
             "tests",
             data={"data": data},
             method="POST",
@@ -296,7 +296,7 @@ class Interface:
                     response,
                     response_data,
                 )
-        test = Test(self.requestor, response_data["data"])
+        test = Test(self._requestor, response_data["data"])
         # TODO: do something with credits_left and credits_used
         return test
 
@@ -315,7 +315,7 @@ class Interface:
         if filter is not None:
             query.extend(["filter[%s]=%s" % (k, v) for (k, v) in filter.items()])
 
-        (response, response_data) = self.requestor.request("tests?" + "&".join(query))
+        (response, response_data) = self._requestor.request("tests?" + "&".join(query))
         # TODO: pagination:
         # if there is link[next]:
         #   repeat with page_number=N+1
@@ -353,5 +353,5 @@ class Interface:
                     response,
                     response_data,
                 )
-        tests = [Test(self.requestor, test_data) for test_data in response_data["data"]]
+        tests = [Test(self._requestor, test_data) for test_data in response_data["data"]]
         return tests
