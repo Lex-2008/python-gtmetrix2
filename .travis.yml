@@ -19,4 +19,4 @@ deploy:
   on:
     all_branches: true
     python: "3.9"
-      #tags: true
+    tags: true
