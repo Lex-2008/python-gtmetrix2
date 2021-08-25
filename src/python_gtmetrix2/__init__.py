@@ -41,10 +41,11 @@ class Requestor:
         auth_handler = urllib.request.HTTPBasicAuthHandler(password_manager)
 
         self._opener = urllib.request.build_opener(auth_handler, NoRedirect)
+        self._redirect_opener = urllib.request.build_opener(auth_handler)
         self._sleep = sleep_function
 
-    def _plain_request(self, url, **kwargs):
-        # method=None, data=None, headers={}, valid_status=None, valid_statuses=None, require_data=True):
+    def _plain_request(self, url, opener, **kwargs):
+        # method=None, data=None, headers={}, valid_status=None, valid_statuses=None, return_data=True, require_data=True, return_json=True
         data = kwargs.get("data", None)
         if isinstance(data, dict):
             data = json.dumps(data)
@@ -57,7 +58,7 @@ class Requestor:
             method=kwargs.get("method", None),
         )
         try:
-            response = self._opener.open(request)
+            response = opener.open(request)
         except urllib.error.HTTPError as e:
             # https://docs.python.org/3/library/urllib.error.html#urllib.error.HTTPError
             # > Though being an exception (a subclass of URLError), an HTTPError
@@ -77,12 +78,17 @@ class Requestor:
                     response,
                     response.read(),
                 )
+        if not kwargs.get("return_data", True):
+            return (response, None)
         data = response.read()
+        # TODO: retry reads if you can't read the whole response in one go
         if len(data) == 0:
             if kwargs.get("require_data", True):
                 raise GTmetrixAPIFailureException("API returned empty response", request, response, data)
             else:
                 return (response, None)
+        # if not kwargs.get("return_json", True):
+        #     return (response, data)
         try:
             json_data = json.loads(data.decode())
         except (json.JSONDecodeError, UnicodeError) as e:
@@ -134,8 +140,12 @@ class Requestor:
                 self._sleep(delay)
                 return self._retry_request(url, retries - 1, **kwargs)
 
-    def request(self, url, data=None, **kwargs):
-        return self._retry_request(url, data=data, **kwargs)
+    def request(self, url, follow_redirects=False, data=None, **kwargs):
+        if follow_redirects:
+            opener = self._redirect_opener
+        else:
+            opener = self._opener
+        return self._retry_request(url, opener=opener, data=data, **kwargs)
 
 
 def dict_is_error(data):
@@ -267,7 +277,7 @@ class Interface:
         data = {"type": "test", "attributes": attributes}
         (response, response_data) = self.requestor.request(
             "tests",
-            {"data": data},
+            data={"data": data},
             method="POST",
             headers={"Content-Type": "application/vnd.api+json"},
         )
