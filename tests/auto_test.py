@@ -522,3 +522,23 @@ def test_interface_status_negative(httpserver: HTTPServer):
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-user"):
             interface.status()
+
+
+def test_interface_test_from_id(httpserver: HTTPServer):
+    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+    test_json = {"type": "test", "id": "a", "attributes": {"n": 1}}
+    httpserver.expect_oneshot_request("/tests/a").respond_with_json({"data": test_json})
+    with httpserver.wait():
+        test = interface.testFromId("a")
+    assert isinstance(test, python_gtmetrix2.Test)
+    assert test["attributes"]["n"] == 1
+
+
+def test_interface_report_from_id(httpserver: HTTPServer):
+    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+    report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {}}
+    httpserver.expect_oneshot_request("/reports/a").respond_with_json({"data": report_json})
+    with httpserver.wait():
+        report = interface.reportFromId("a")
+    assert isinstance(report, python_gtmetrix2.Report)
+    assert report["attributes"]["n"] == 1

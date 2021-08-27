@@ -392,3 +392,13 @@ class Interface:
                     response_data,
                 )
         return response_data["data"]
+
+    def testFromId(self, test_id):
+        return Test.fromURL(
+            self._requestor, self._requestor.base_url + "/tests/" + test_id, sleep_function=self._sleep
+        )
+
+    def reportFromId(self, report_id):
+        return Report.fromURL(
+            self._requestor, self._requestor.base_url + "/reports/" + report_id, sleep_function=self._sleep
+        )
