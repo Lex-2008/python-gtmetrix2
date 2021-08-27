@@ -20,36 +20,28 @@ def test_requestor_positive(httpserver: HTTPServer):
     requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""))
 
     # test that simple response comes through
-    httpserver.expect_oneshot_request("/oneshot").respond_with_json({"value": 42}, status=400)
+    httpserver.expect_oneshot_request("/oneshot").respond_with_json({"data": {"value": 42}})
     with httpserver.wait():
         (response, response_data) = requestor.request("oneshot")
-    assert response_data["value"] == 42
+    assert response_data["data"]["value"] == 42
 
     # test that proper error response raises proper exception
     httpserver.expect_oneshot_request("/oneshot").respond_with_json(
-        {"errors": [{"status": "404", "code": "E404", "title": "Not Found"}]}
+        {"errors": [{"status": "404", "code": "E404", "title": "Not Found"}]}, status=404
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException):
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException) as e:
             requestor.request("/oneshot")
+        assert e.value.data["errors"][0]["status"] == "404"
 
 
 def test_requestor_negative(httpserver: HTTPServer):
     requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""))
 
-    # for verious ways API can try to screw us
-    httpserver.expect_oneshot_request("/oneshot").respond_with_json({"value": 42}, status=201)
-    with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="invalid status: 201"):
-            requestor.request("/oneshot", valid_status=200)
-
-    httpserver.expect_ordered_request("/empty").respond_with_data("")
+    httpserver.expect_oneshot_request("/oneshot").respond_with_data("")
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="empty response"):
-            requestor.request("/empty")
-    httpserver.expect_ordered_request("/empty").respond_with_data("")
-    with httpserver.wait():
-        requestor.request("/empty", require_data=False)
+            requestor.request("/oneshot")
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_data("{")
     with httpserver.wait():
@@ -58,19 +50,49 @@ def test_requestor_negative(httpserver: HTTPServer):
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"errors": 42})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-list"):
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="errors"):
             requestor.request("/oneshot")
 
-    httpserver.expect_oneshot_request("/oneshot").respond_with_json({"errors": []})
+    httpserver.expect_oneshot_request("/oneshot").respond_with_data("{}")
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="empty list"):
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
             requestor.request("/oneshot")
 
+
+def test_requestor_negative_error(httpserver: HTTPServer):
+    requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""))
+
+    httpserver.expect_oneshot_request("/oneshot").respond_with_data("", status=400)
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="empty response"):
+            requestor.request("/oneshot")
+
+    httpserver.expect_oneshot_request("/oneshot").respond_with_data("{", status=400)
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="unparse?able"):
+            requestor.request("/oneshot")
+
+    httpserver.expect_oneshot_request("/oneshot").respond_with_data("{}", status=400)
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="no errors"):
+            requestor.request("/oneshot")
+
+    httpserver.expect_oneshot_request("/oneshot").respond_with_json({"errors": 42}, status=400)
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="non-list"):
+            requestor.request("/oneshot")
+
+    httpserver.expect_oneshot_request("/oneshot").respond_with_json({"errors": []}, status=400)
+    with httpserver.wait():
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="empty list"):
+            requestor.request("/oneshot")
+
+    # first error is correct, second is empty array
     httpserver.expect_oneshot_request("/oneshot").respond_with_json(
-        {"errors": [{"status": "404", "code": "E404", "title": "Not Found"}, {}]}
+        {"errors": [{"status": "404", "code": "E404", "title": "Not Found"}, {}]}, status=400
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-error"):
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="non-error"):
             requestor.request("/oneshot")
 
 
@@ -79,54 +101,60 @@ def test_requestor_retry(httpserver: HTTPServer):
     requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""), sleeper.sleep)
 
     httpserver.expect_ordered_request("/ordered").respond_with_json(
-        {"errors": [{"status": "429", "code": "E42900", "title": "Wait 3 sec"}]}
+        {"errors": [{"status": "429", "code": "E42900", "title": "Wait 3 sec"}]}, status=429
     )
     httpserver.expect_ordered_request("/sleep3").respond_with_data("")
-    httpserver.expect_ordered_request("/ordered").respond_with_json({"value": 42})
+    httpserver.expect_ordered_request("/ordered").respond_with_json({"data": {"value": 42}})
     with httpserver.wait():
         (response, response_data) = requestor.request("ordered")
-    assert response_data["value"] == 42
+    assert response_data["data"]["value"] == 42
 
     httpserver.expect_ordered_request("/ordered").respond_with_json(
         {"errors": [{"status": "429", "code": "E42901", "title": "Wait 1 sec"}]},
         headers={"X-RateLimit-Reset": "1"},
+        status=429,
     )
     httpserver.expect_ordered_request("/sleep1").respond_with_data("")
-    httpserver.expect_ordered_request("/ordered").respond_with_json({"value": 42})
+    httpserver.expect_ordered_request("/ordered").respond_with_json({"data": {"value": 42}})
     with httpserver.wait():
         (response, response_data) = requestor.request("ordered")
-    assert response_data["value"] == 42
+    assert response_data["data"]["value"] == 42
 
     httpserver.expect_ordered_request("/ordered").respond_with_json(
         {"errors": [{"status": "429", "code": "E42901", "title": "Wait 1 sec"}]},
         headers={"X-RateLimit-Reset": "1"},
+        status=429,
     )
     httpserver.expect_ordered_request("/sleep1").respond_with_data("")
     httpserver.expect_ordered_request("/ordered").respond_with_json(
         {"errors": [{"status": "429", "code": "E42901", "title": "Wait 1 sec"}]},
         headers={"X-RateLimit-Reset": "1"},
+        status=429,
     )
     httpserver.expect_ordered_request("/sleep1").respond_with_data("")
     httpserver.expect_ordered_request("/ordered").respond_with_json(
         {"errors": [{"status": "429", "code": "E42901", "title": "Wait 1 sec"}]},
         headers={"X-RateLimit-Reset": "1"},
+        status=429,
     )
     httpserver.expect_ordered_request("/sleep1").respond_with_data("")
     httpserver.expect_ordered_request("/ordered").respond_with_json(
         {"errors": [{"status": "429", "code": "E42901", "title": "Wait 1 sec"}]},
         headers={"X-RateLimit-Reset": "1"},
+        status=429,
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException):
-            (response, response_data) = requestor.request("ordered", retries=3)
-    assert response_data["value"] == 42
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException) as e:
+            requestor.request("ordered", retries=3)
+        assert e.value.data["errors"][0]["code"] == "E42901"
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json(
-        {"errors": [{"status": "429", "code": "E42902", "title": "unknown code"}]}
+        {"errors": [{"status": "429", "code": "E42902", "title": "unknown code"}]}, status=429
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException):
+        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException) as e:
             requestor.request("/oneshot")
+        assert e.value.data["errors"][0]["code"] == "E42902"
 
 
 def test_test_fetch(httpserver: HTTPServer):

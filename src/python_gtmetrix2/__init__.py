@@ -15,11 +15,19 @@ class BaseGTmetrixAPIException(Exception):
 
 
 class GTmetrixAPIFailureException(BaseGTmetrixAPIException):
-    """API returned unexpected result."""
+    """API server returned an unexpected response.
+    IOW, There was a disagreement between API server and this library:
+    server returned something what the library did not expect to receive."""
 
-    def __init__(self, message, request, response, data, extra=None):
-        super().__init__(request, response, data, extra)
+    def __init__(self, message, *args):
+        super().__init__(*args)
         self.message = message
+
+
+class GTmetrixAPIErrorFailureException(GTmetrixAPIFailureException):
+    """GTmetrixAPIFailureException happened when processing an error response."""
+
+    pass
 
 
 class GTmetrixAPIErrorException(BaseGTmetrixAPIException):
@@ -46,7 +54,7 @@ class Requestor:
         self._sleep = sleep_function
 
     def _plain_request(self, url, opener, **kwargs):
-        # method=None, data=None, headers={}, valid_status=None, valid_statuses=None, return_data=True, require_data=True, return_json=True
+        # method=None, data=None, headers={}, return_data=True
         data = kwargs.get("data", None)
         if isinstance(data, dict):
             data = json.dumps(data)
@@ -60,6 +68,7 @@ class Requestor:
         )
         try:
             response = opener.open(request)
+            response_code = response.status  # HTTP code, like 200 or 404
         except urllib.error.HTTPError as e:
             # https://docs.python.org/3/library/urllib.error.html#urllib.error.HTTPError
             # > Though being an exception (a subclass of URLError), an HTTPError
@@ -67,52 +76,51 @@ class Requestor:
             # > (the same thing that urlopen() returns).
             # first seen at https://stackoverflow.com/a/52086806
             response = e
-        if __debug__:
-            # NOTE: in production, we don't check for status returned by API.
-            # However, it might be helpful in CI tests
-            if "valid_status" in kwargs:
-                kwargs["valid_statuses"] = [kwargs["valid_status"]]
-            if "valid_statuses" in kwargs and response.status not in kwargs["valid_statuses"]:
-                raise GTmetrixAPIFailureException(
-                    ("API returned invalid status: %s" % response.status),
-                    request,
-                    response,
-                    response.read(),
-                )
+            response_code = response.code  # HTTP code, like 200 or 404
+        if response_code >= 400:
+            # That's an error
+            data = response.read()
+            if __debug__ and len(data) == 0:
+                raise GTmetrixAPIErrorFailureException("API returned empty response", request, response, data)
+            try:
+                json_data = json.loads(data.decode())
+            except (json.JSONDecodeError, UnicodeError) as e:
+                raise GTmetrixAPIErrorFailureException("API returned unparsable JSON", request, response, data) from e
+            if __debug__:
+                if "errors" not in json_data:
+                    raise GTmetrixAPIErrorFailureException(
+                        "API returned no errors with an HTTP code 400 or over", request, response, json_data
+                    )
+                if not isinstance(json_data["errors"], list):
+                    raise GTmetrixAPIErrorFailureException(
+                        "API returned non-list of errors", request, response, json_data
+                    )
+                if len(json_data["errors"]) < 1:
+                    raise GTmetrixAPIErrorFailureException(
+                        "API returned empty list of errors", request, response, json_data
+                    )
+                if not all((dict_is_error(x) for x in json_data["errors"])):
+                    raise GTmetrixAPIErrorFailureException(
+                        "API returned non-error in error list", request, response, json_data
+                    )
+            raise GTmetrixAPIErrorException(request, response, json_data)
         if not kwargs.get("return_data", True):
             return (response, None)
         data = response.read()
-        # TODO: retry reads if you can't read the whole response in one go
-        if len(data) == 0:
-            if kwargs.get("require_data", True):
-                raise GTmetrixAPIFailureException("API returned empty response", request, response, data)
-            else:
-                return (response, None)
-        # if not kwargs.get("return_json", True):
-        #     return (response, data)
+        # TODO: retry reads until the one which returns nothing
+        if __debug__ and len(data) == 0:
+            raise GTmetrixAPIFailureException("API returned empty response", request, response, data)
         try:
             json_data = json.loads(data.decode())
         except (json.JSONDecodeError, UnicodeError) as e:
             raise GTmetrixAPIFailureException("API returned unparsable JSON", request, response, data) from e
-        if "errors" in json_data:
-            if __debug__:
-                if not isinstance(json_data["errors"], list):
-                    raise GTmetrixAPIFailureException("API returned non-list of errors", request, response, json_data)
-                if len(json_data["errors"]) < 1:
-                    raise GTmetrixAPIFailureException(
-                        "API returned empty list of errors",
-                        request,
-                        response,
-                        json_data,
-                    )
-                if not all((dict_is_error(x) for x in json_data["errors"])):
-                    raise GTmetrixAPIFailureException(
-                        "API returned non-error in error list",
-                        request,
-                        response,
-                        json_data,
-                    )
-            raise GTmetrixAPIErrorException(request, response, json_data)
+        if __debug__:
+            if "errors" in json_data:
+                raise GTmetrixAPIFailureException(
+                    "API returned errors with an HTTP code %s under 400" % response_code, request, response, json_data
+                )
+            if "data" not in json_data:
+                raise GTmetrixAPIFailureException("API returned no data", request, response, json_data)
         return (response, json_data)
 
     def _retry_request(self, url, retries=10, **kwargs):
@@ -212,14 +220,6 @@ class Test(Object):
     def fetch(self, wait_for_complete=False, retries=10):
         (response, response_data) = self._requestor.request("tests/" + self["id"])
         if __debug__:
-            if not "data" in response_data:
-                raise GTmetrixAPIFailureException(
-                    "API returned no data for a test",
-                    None,
-                    response,
-                    response_data,
-                    self,
-                )
             if not dict_is_test(response_data["data"]):
                 raise GTmetrixAPIFailureException(
                     "API returned non-test for a test",
@@ -249,8 +249,6 @@ class Test(Object):
         # TODO: fetching from external URL
         (response, response_data) = requestor.request(url)
         if __debug__:
-            if not "data" in response_data:
-                raise GTmetrixAPIFailureException("API returned no data for a test", None, response, response_data)
             if not dict_is_test(response_data["data"]):
                 raise GTmetrixAPIFailureException("API returned non-test for a test", None, response, response_data)
         return Test(requestor, response_data["data"], sleep_function)
@@ -264,8 +262,6 @@ class Report(Object):
         # TODO: fetching from external URL
         (response, response_data) = requestor.request(url)
         if __debug__:
-            if not "data" in response_data:
-                raise GTmetrixAPIFailureException("API returned no data for a report", None, response, response_data)
             if not dict_is_report(response_data["data"]):
                 raise GTmetrixAPIFailureException(
                     "API returned non-report for a report",
@@ -282,13 +278,6 @@ class Report(Object):
         (response, response_data) = self._requestor.request("reports/%s/retest" % self["id"], method="POST")
         # TODO: this is same as when starting a test
         if __debug__:
-            if not "data" in response_data:
-                raise GTmetrixAPIFailureException(
-                    "API returned no data for a retest",
-                    None,
-                    response,
-                    response_data,
-                )
             if not dict_is_test(response_data["data"]):
                 raise GTmetrixAPIFailureException(
                     "API returned non-test for a retest",
@@ -339,13 +328,6 @@ class Interface:
             headers={"Content-Type": "application/vnd.api+json"},
         )
         if __debug__:
-            if not "data" in response_data:
-                raise GTmetrixAPIFailureException(
-                    "API returned no data for a started test",
-                    None,
-                    response,
-                    response_data,
-                )
             if not dict_is_test(response_data["data"]):
                 raise GTmetrixAPIFailureException(
                     "API returned non-test for a started test",
@@ -381,13 +363,6 @@ class Interface:
         #  results.extend(request_data...)
         #  next_link=request_data.get(..., None)
         if __debug__:
-            if not "data" in response_data:
-                raise GTmetrixAPIFailureException(
-                    "API returned no data for a list of tests",
-                    None,
-                    response,
-                    response_data,
-                )
             if not isinstance(response_data["data"], list):
                 raise GTmetrixAPIFailureException(
                     "API returned non-list for a list of tests",
@@ -408,8 +383,6 @@ class Interface:
     def status(self):
         (response, response_data) = self._requestor.request("status")
         if __debug__:
-            if not "data" in response_data:
-                raise GTmetrixAPIFailureException("API returned no data for status", None, response, response_data)
             if not dict_is_user(response_data["data"]):
                 raise GTmetrixAPIFailureException(
                     "API returned non-user for status",
