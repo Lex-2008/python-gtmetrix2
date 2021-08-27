@@ -285,7 +285,7 @@ class Report(Object):
                     response,
                     response_data,
                 )
-        test = Test(self._requestor, response_data["data"])
+        test = Test(self._requestor, response_data["data"], self._sleep)
         return test
 
     def getresource(self, name, destination=None):
@@ -316,6 +316,7 @@ class Interface:
         sleep_function=time.sleep,
     ):
         self._requestor = Requestor(api_key, base_url, sleep_function)
+        self._sleep = sleep_function
 
     def start_test(self, url, **attributes):
         """Start a Test"""
@@ -335,7 +336,7 @@ class Interface:
                     response,
                     response_data,
                 )
-        test = Test(self._requestor, response_data["data"])
+        test = Test(self._requestor, response_data["data"], self._sleep)
         # TODO: do something with credits_left and credits_used
         return test
 
@@ -377,7 +378,7 @@ class Interface:
                     response,
                     response_data,
                 )
-        tests = [Test(self._requestor, test_data) for test_data in response_data["data"]]
+        tests = [Test(self._requestor, test_data, self._sleep) for test_data in response_data["data"]]
         return tests
 
     def status(self):
