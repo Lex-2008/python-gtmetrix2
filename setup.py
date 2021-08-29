@@ -1,7 +1,7 @@
 import setuptools
 import os
 
-with open("README.md", "r", encoding="utf-8") as fh:
+with open("README.rst", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 # Note that $TRAVIS_TAG might be an empty string
@@ -19,8 +19,9 @@ setuptools.setup(
     description="A Python client library for GTmetrix REST API v2.0",
     keywords="python gtmetrix performance lighthouse pagespeed yslow",
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url="https://github.com/Lex-2008/python-gtmetrix2",
+    project_urls={'Documentation': 'https://python-gtmetrix2.readthedocs.io/en/latest/'},
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",

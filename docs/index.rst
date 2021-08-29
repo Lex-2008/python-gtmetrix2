@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 .. include:: ../README.rst
-   :end-before: endinclude
+   :end-before: explanation
 
 For a wordy introduction into this library, please see next chapter.
 For a more technical explanation, dive into module reference.

@@ -5,9 +5,9 @@ python-gtmetrix2
 `GTmetrix <https://gtmetrix.com/>`__ REST API
 `v2.0 <https://gtmetrix.com/api/docs/2.0/>`__ (hence 2 in the name).
 
-|Build Status| |codecov| |Code style: black| |License: MIT|
+|Build Status| |codecov| |Code style: black| |Documentation Status|
 
-|PyPI - Latest Version| |PyPI - Python Version| |PyPI - Downloads|
+|PyPI - Latest Version| |PyPI - Python Version| |PyPI - Downloads| |License: MIT|
 
 .. |Build Status| image:: https://app.travis-ci.com/Lex-2008/python-gtmetrix2.svg?branch=main
    :target: https://app.travis-ci.com/Lex-2008/python-gtmetrix2
@@ -15,14 +15,16 @@ python-gtmetrix2
    :target: https://codecov.io/gh/Lex-2008/python-gtmetrix2
 .. |Code style: black| image:: https://img.shields.io/badge/code_style-black_--l_118-green.svg
    :target: https://github.com/psf/black
-.. |License: MIT| image:: https://img.shields.io/github/license/Lex-2008/python-gtmetrix2
-   :target: https://github.com/Lex-2008/python-gtmetrix2/blob/main/LICENSE
+.. |Documentation Status| image:: https://readthedocs.org/projects/python-gtmetrix2/badge/?version=latest
+   :target: https://python-gtmetrix2.readthedocs.io/en/latest/?badge=latest
 
 .. |PyPI - Latest Version| image:: https://img.shields.io/pypi/v/python-gtmetrix2
    :target: https://pypi.org/project/python-gtmetrix2/
 .. |PyPI - Python Version| image:: https://img.shields.io/pypi/pyversions/python-gtmetrix2
    :target: https://pypi.org/project/python-gtmetrix2/
 .. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/python-gtmetrix2
+   :target: https://pypi.org/project/python-gtmetrix2/
+.. |License: MIT| image:: https://img.shields.io/pypi/l/python-gtmetrix2
    :target: https://pypi.org/project/python-gtmetrix2/
 
 Inspired by the `library with a similar
@@ -61,9 +63,7 @@ Simplest example:
     report = test.getreport()                       # get test result
     print(json.dumps(report, indent=2))             # do something useful with it
 
-.. only:: Internal
-
-    endinclude
+For an explanation of the above lines, `dive into the docs <https://python-gtmetrix2.readthedocs.io/>`__
 
 Testing:
 ~~~~~~~~
