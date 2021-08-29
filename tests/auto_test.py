@@ -278,7 +278,7 @@ def test_test_fromurl_positive(httpserver: HTTPServer):
     test_json = {"type": "test", "id": "a", "attributes": {"n": 1}}
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"data": test_json})
     with httpserver.wait():
-        test = python_gtmetrix2.Test.fromURL(requestor, httpserver.url_for("oneshot"))
+        test = python_gtmetrix2.Test._fromURL(requestor, httpserver.url_for("oneshot"))
     assert isinstance(test, python_gtmetrix2.Test)
     assert test["attributes"]["n"] == 1
 
@@ -289,12 +289,12 @@ def test_test_fromurl_negative(httpserver: HTTPServer):
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({})
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
-            test = python_gtmetrix2.Test.fromURL(requestor, httpserver.url_for("oneshot"))
+            test = python_gtmetrix2.Test._fromURL(requestor, httpserver.url_for("oneshot"))
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"data": 42})
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
-            test = python_gtmetrix2.Test.fromURL(requestor, httpserver.url_for("oneshot"))
+            test = python_gtmetrix2.Test._fromURL(requestor, httpserver.url_for("oneshot"))
 
 
 def test_report_fromurl_positive(httpserver: HTTPServer):
@@ -302,7 +302,7 @@ def test_report_fromurl_positive(httpserver: HTTPServer):
     report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {}}
     httpserver.expect_oneshot_request("/report1").respond_with_json({"data": report_json})
     with httpserver.wait():
-        report = python_gtmetrix2.Report.fromURL(requestor, httpserver.url_for("report1"))
+        report = python_gtmetrix2.Report._fromURL(requestor, httpserver.url_for("report1"))
     assert isinstance(report, python_gtmetrix2.Report)
     assert report["attributes"]["n"] == 1
 
@@ -313,12 +313,12 @@ def test_report_fromurl_negative(httpserver: HTTPServer):
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({})
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
-            report = python_gtmetrix2.Report.fromURL(requestor, httpserver.url_for("oneshot"))
+            report = python_gtmetrix2.Report._fromURL(requestor, httpserver.url_for("oneshot"))
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"data": 42})
     with httpserver.wait():
         with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-report"):
-            report = python_gtmetrix2.Report.fromURL(requestor, httpserver.url_for("oneshot"))
+            report = python_gtmetrix2.Report._fromURL(requestor, httpserver.url_for("oneshot"))
 
 
 def test_report_delete(httpserver: HTTPServer):

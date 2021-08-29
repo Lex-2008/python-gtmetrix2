@@ -1,0 +1,12 @@
+################################# NOTE ##############################
+###                                                               ###
+### Note that these packages are required for BUILDING DOCS only. ###
+### For normal use, this library depends on nothing.              ###
+###                                                               ###
+################################# NOTE ##############################
+
+### required to build docs
+sphinx
+sphinx_glpi_theme
+sphinx-autodoc-typehints
+

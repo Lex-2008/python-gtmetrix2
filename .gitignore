@@ -2,3 +2,5 @@
 htmlcov
 __pycache__
 .pytest_cache
+docs/1
+docs/_build
