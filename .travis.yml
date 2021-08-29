@@ -12,11 +12,21 @@ script:
 after_success:
   - codecov
 deploy:
-  provider: pypi
-  username: "__token__"
-  edge: true # opt in to dpl v2
-  distributions: "sdist bdist_wheel"
-  on:
-    all_branches: true
-    python: "3.9"
-    tags: true
+    # TEST provider - deploys to test.pypi.org from test branch
+  - provider: pypi
+    username: "__token__"
+    distributions: "sdist bdist_wheel"
+    server: "https://test.pypi.org/legacy/"
+    edge: true
+    on:
+      branch: test
+      python: "3.9"
+    # PROD provider - deploys to pypi.org from a tag
+    # Note that tags must be on "main" branch - otherwise, deployment will fail
+  - provider: pypi
+    username: "__token__"
+    distributions: "sdist bdist_wheel"
+    edge: true
+    on:
+      python: "3.9"
+      tags: true
