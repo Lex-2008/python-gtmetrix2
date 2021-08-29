@@ -17,5 +17,4 @@ For a more technical explanation, dive into module reference.
    intro
    python_gtmetrix2
    genindex
-   search
 
