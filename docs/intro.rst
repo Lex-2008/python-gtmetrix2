@@ -1,6 +1,8 @@
 Introdunction
 =============
 
+.. currentmodule:: python_gtmetrix2
+
 Account
 ~~~~~~~~~
 
@@ -13,7 +15,7 @@ initialized like this:
 
 where ``api_key`` is your GTmetrix API key.
 
-Account lets you start tests, like this:
+Object of this class lets you start tests, like this:
 
 .. code-block:: python
 
@@ -45,23 +47,19 @@ the test to finish, read on.
 Test
 ~~~~
 
-Object of type :class:`Test` has two useful methods: :meth:`Test.fetch` and :meth:`Test.getreport`.
-:meth:`Test.fetch` updates test information from GTmetrix API server and has an optional
-argument ``wait_for_completion``, which, when set to ``True``, instructs this
-method to wait until the test finishes.  Like this:
+Object of type :class:`Test` has two methods which you will be using:
+:meth:`fetch() <Test.fetch>` and :meth:`getreport() <Test.getreport>`. Method
+:meth:`fetch() <Test.fetch>` updates test information from GTmetrix API server
+and has an optional argument ``wait_for_completion``, which, when set to
+``True``, instructs this method to wait until the test finishes.
+
+If the test completes successfully (which happens most of the time), you can
+use :meth:`getreport() <Test.getreport>` method to retrieve test results in the
+form of :class:`Report` object, like this:
 
 .. code-block:: python
 
     test.fetch(wait_for_completion=True)
-
-If the test completes successfully (which happens most of the time), you can
-use ``getreport`` method to retrieve test results in the form of ``Report``
-object.
-
-Like this:
-
-.. code-block:: python
-
     report = test.getreport()
 
 Note that ``report`` might be ``None`` if test did not finish successfully (for
@@ -70,14 +68,22 @@ example, due to connection or certificate error).
 Report
 ~~~~~~
 
-For now, report doesn't provide any special functionality, but you can access
-all its data.  It's basically a ``dict`` containing all data returned by
-GTmetrix API.  You can consult all possible values in the `docs
-<https://gtmetrix.com/api/docs/2.0/#api-report-by-id>`__.
+:class:`Report` is a descendant of :class:`dict`, so you can treat it like one:
 
-More examples
-~~~~~~~~~~~~~
+.. code-block:: python
 
-are in
+   print(json.dumps(report, indent=2))
+
+Report also has :meth:`getresource <Report.getresource>` method which lets you
+save a report resource (like a PDF representation of the report, screenshot, or
+a video of loading website) to file or a variable in your program:
+
+.. code-block:: python
+
+   report.getresource('report.pdf', 'report.pdf')
+
+----
+
+That's all for now. More examples can be found in
 `examples <https://github.com/Lex-2008/python-gtmetrix2/tree/main/examples>`__
-directory.
+directory in the repo.

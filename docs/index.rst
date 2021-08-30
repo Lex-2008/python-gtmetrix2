@@ -4,17 +4,18 @@
    contain the root `toctree` directive.
 
 .. include:: ../README.rst
-   :end-before: explanation
+   :end-before: For a wordy introduction
 
 For a wordy introduction into this library, please see next chapter.
 For a more technical explanation, dive into module reference.
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 1
    :caption: Contents:
 
-   self
    intro
    python_gtmetrix2
+   hacking
+   changelog
    genindex
 

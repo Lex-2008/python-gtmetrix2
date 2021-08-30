@@ -21,9 +21,10 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/x-rst",
     url="https://github.com/Lex-2008/python-gtmetrix2",
-    project_urls={'Documentation': 'https://python-gtmetrix2.readthedocs.io/en/latest/'},
+    project_urls={'Documentation': 'https://python-gtmetrix2.readthedocs.io/'},
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        # https://pypi.org/classifiers/
+        "Development Status :: 4 - Beta",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",

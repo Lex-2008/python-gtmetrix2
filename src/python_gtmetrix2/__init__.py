@@ -30,7 +30,7 @@ for a finished test.
 
 Also note that :class:`Test` and :class:`Report` classes are descendants of the
 dict, so you can operate on as such: :func:`json.dumps` them to inspect
-their internals, and access their attributes via
+their internals, and access their attributes same way as for a :class:`dict`.
 
 Exceptions
 ----------
