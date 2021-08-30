@@ -65,8 +65,8 @@ Simplest example:
     import json
     import python_gtmetrix2
     api_key = "e8ddc55d93eb0e8281b255ea236dcc4f"    # your API key
-    interface = python_gtmetrix2.Interface(api_key) # init
-    test = interface.start_test(url)                # start test
+    account = python_gtmetrix2.Account(api_key)     # init
+    test = account.start_test(url)                  # start test
     test.fetch(wait_for_completion=True)            # wait for it to finish
     report = test.getreport()                       # get test result
     print(json.dumps(report, indent=2))             # do something useful with it

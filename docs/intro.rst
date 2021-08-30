@@ -1,30 +1,30 @@
 Introdunction
 =============
 
-Interface
+Account
 ~~~~~~~~~
 
-Main entry point for this library is :class:`Interface` class which is
+Main entry point for this library is :class:`Account` class which is
 initialized like this:
 
 .. code-block:: python
 
-    interface = python_gtmetrix2.Interface(api_key)
+    account = python_gtmetrix2.Account(api_key)
 
 where ``api_key`` is your GTmetrix API key.
 
-Interface lets you start tests, like this:
+Account lets you start tests, like this:
 
 .. code-block:: python
 
-    test = interface.start_test(url)
+    test = account.start_test(url)
 
 where ``url`` is the url you want to test. Optionally, you can pass extra
 arguments, like this:
 
 .. code-block:: python
 
-    test = interface.start_test(url, report='none', adblock=1)
+    test = account.start_test(url, report='none', adblock=1)
 
 Full list of available parameters is available in `GTmetrix API documentation
 <https://gtmetrix.com/api/docs/2.0/#api-test-start>`__, section "Test
@@ -38,7 +38,7 @@ the test to finish, read on.
 
         .. code-block:: python
 
-            tests = interface.list_tests()
+            tests = account.list_tests()
 
         This call returns a :class:`list` of objects of type :class:`Test`.
 

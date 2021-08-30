@@ -30,7 +30,7 @@ def test_requestor_positive(httpserver: HTTPServer):
         {"errors": [{"status": "404", "code": "E404", "title": "Not Found"}]}, status=404
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException) as e:
+        with pytest.raises(python_gtmetrix2.APIErrorException) as e:
             requestor.request("/oneshot")
         assert e.value.data["errors"][0]["status"] == "404"
 
@@ -40,22 +40,22 @@ def test_requestor_negative(httpserver: HTTPServer):
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_data("")
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="empty response"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="empty response"):
             requestor.request("/oneshot")
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_data("{")
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="unparse?able"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="unparse?able"):
             requestor.request("/oneshot")
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"errors": 42})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="errors"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="errors"):
             requestor.request("/oneshot")
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_data("{}")
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="no data"):
             requestor.request("/oneshot")
 
 
@@ -64,27 +64,27 @@ def test_requestor_negative_error(httpserver: HTTPServer):
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_data("", status=400)
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="empty response"):
+        with pytest.raises(python_gtmetrix2.APIErrorFailureException, match="empty response"):
             requestor.request("/oneshot")
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_data("{", status=400)
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="unparse?able"):
+        with pytest.raises(python_gtmetrix2.APIErrorFailureException, match="unparse?able"):
             requestor.request("/oneshot")
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_data("{}", status=400)
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="no errors"):
+        with pytest.raises(python_gtmetrix2.APIErrorFailureException, match="no errors"):
             requestor.request("/oneshot")
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"errors": 42}, status=400)
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="non-list"):
+        with pytest.raises(python_gtmetrix2.APIErrorFailureException, match="non-list"):
             requestor.request("/oneshot")
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"errors": []}, status=400)
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="empty list"):
+        with pytest.raises(python_gtmetrix2.APIErrorFailureException, match="empty list"):
             requestor.request("/oneshot")
 
     # first error is correct, second is empty array
@@ -92,7 +92,7 @@ def test_requestor_negative_error(httpserver: HTTPServer):
         {"errors": [{"status": "404", "code": "E404", "title": "Not Found"}, {}]}, status=400
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorFailureException, match="non-error"):
+        with pytest.raises(python_gtmetrix2.APIErrorFailureException, match="non-error"):
             requestor.request("/oneshot")
 
 
@@ -144,7 +144,7 @@ def test_requestor_retry(httpserver: HTTPServer):
         status=429,
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException) as e:
+        with pytest.raises(python_gtmetrix2.APIErrorException) as e:
             requestor.request("ordered", retries=3)
         assert e.value.data["errors"][0]["code"] == "E42901"
 
@@ -152,7 +152,7 @@ def test_requestor_retry(httpserver: HTTPServer):
         {"errors": [{"status": "429", "code": "E42902", "title": "unknown code"}]}, status=429
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIErrorException) as e:
+        with pytest.raises(python_gtmetrix2.APIErrorException) as e:
             requestor.request("/oneshot")
         assert e.value.data["errors"][0]["code"] == "E42902"
 
@@ -246,12 +246,12 @@ def test_test_fetch_negative(httpserver: HTTPServer):
 
     httpserver.expect_oneshot_request("/tests/a").respond_with_json({})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="no data"):
             test.fetch()
 
     httpserver.expect_oneshot_request("/tests/a").respond_with_json({"data": {}})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="non-test"):
             test.fetch()
 
 
@@ -288,12 +288,12 @@ def test_test_fromurl_negative(httpserver: HTTPServer):
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="no data"):
             test = python_gtmetrix2.Test._fromURL(requestor, httpserver.url_for("oneshot"))
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"data": 42})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="non-test"):
             test = python_gtmetrix2.Test._fromURL(requestor, httpserver.url_for("oneshot"))
 
 
@@ -312,12 +312,12 @@ def test_report_fromurl_negative(httpserver: HTTPServer):
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="no data"):
             report = python_gtmetrix2.Report._fromURL(requestor, httpserver.url_for("oneshot"))
 
     httpserver.expect_oneshot_request("/oneshot").respond_with_json({"data": 42})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-report"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="non-report"):
             report = python_gtmetrix2.Report._fromURL(requestor, httpserver.url_for("oneshot"))
 
 
@@ -354,12 +354,12 @@ def test_report_retest_negative(httpserver: HTTPServer):
     report = python_gtmetrix2.Report(requestor, report_json)
     httpserver.expect_oneshot_request("/reports/b/retest", method="POST").respond_with_json({})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="no data"):
             report.retest()
 
     httpserver.expect_oneshot_request("/reports/b/retest", method="POST").respond_with_json({"data": 12})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="non-test"):
             report.retest()
 
 
@@ -392,8 +392,8 @@ def test_report_getresource(httpserver: HTTPServer, tmp_path):
     assert result == "x"
 
 
-def test_interface_start_positive(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_start_positive(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
     httpserver.expect_oneshot_request(
         "/tests",
         method="POST",
@@ -416,49 +416,49 @@ def test_interface_start_positive(httpserver: HTTPServer):
         headers={"Location": httpserver.url_for("/tests/a")},
     )
     with httpserver.wait():
-        test = interface.start_test("example.com", key="value")
+        test = account.start_test("example.com", key="value")
     assert test["type"] == "test"
     assert test["attributes"]["source"] == "api"
 
 
-def test_interface_start_negative(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_start_negative(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
 
     httpserver.expect_oneshot_request("/tests", method="POST").respond_with_json({})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
-            interface.start_test("example.com")
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="no data"):
+            account.start_test("example.com")
 
     httpserver.expect_oneshot_request("/tests", method="POST").respond_with_json({"data": 12})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
-            interface.start_test("example.com")
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="non-test"):
+            account.start_test("example.com")
 
 
-def test_interface_list_positive(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_list_positive(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
     httpserver.expect_oneshot_request("/tests").respond_with_json(
         {"data": [{"type": "test", "id": "a", "attributes": {}}]}
     )
     with httpserver.wait():
-        tests = interface.list_tests()
+        tests = account.list_tests()
     assert isinstance(tests, list)
     assert len(tests) == 1
     assert all((isinstance(test, python_gtmetrix2.Test) for test in tests))
 
 
-def test_interface_list_args(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_list_args(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
 
     httpserver.expect_oneshot_request("/tests", query_string="sort=this").respond_with_json({"data": []})
     with httpserver.wait():
-        tests = interface.list_tests(sort="this")
+        tests = account.list_tests(sort="this")
     assert isinstance(tests, list)
     assert len(tests) == 0
 
     httpserver.expect_oneshot_request("/tests", query_string="filter[this]=that").respond_with_json({"data": []})
     with httpserver.wait():
-        tests = interface.list_tests(filter={"this": "that"})
+        tests = account.list_tests(filter={"this": "that"})
     assert isinstance(tests, list)
     assert len(tests) == 0
 
@@ -471,74 +471,74 @@ def test_interface_list_args(httpserver: HTTPServer):
         },
     ).respond_with_json({"data": []})
     with httpserver.wait():
-        tests = interface.list_tests(sort="complex", filter={"this": "that", "key": "value"})
+        tests = account.list_tests(sort="complex", filter={"this": "that", "key": "value"})
     assert isinstance(tests, list)
     assert len(tests) == 0
 
 
-def test_interface_list_negative(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_list_negative(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
 
     httpserver.expect_oneshot_request("/tests").respond_with_json({})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
-            interface.list_tests()
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="no data"):
+            account.list_tests()
 
     httpserver.expect_oneshot_request("/tests").respond_with_json({"data": 12})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-list"):
-            interface.list_tests()
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="non-list"):
+            account.list_tests()
 
     httpserver.expect_oneshot_request("/tests").respond_with_json(
         {"data": [{"type": "test", "id": "a", "attributes": {}}, {}]}
     )
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-test"):
-            interface.list_tests()
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="non-test"):
+            account.list_tests()
 
 
-def test_interface_status_positive(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_status_positive(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
     httpserver.expect_oneshot_request("/status").respond_with_json(
         {"data": {"type": "user", "id": "a", "attributes": {"api_credits": 1.2, "api_refill": 3}}}
     )
     with httpserver.wait():
-        status = interface.status()
+        status = account.status()
     assert isinstance(status, dict)
     assert status["type"] == "user"
     assert status["attributes"]["api_credits"] == 1.2
     assert status["attributes"]["api_refill"] == 3
 
 
-def test_interface_status_negative(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_status_negative(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
 
     httpserver.expect_oneshot_request("/status").respond_with_json({})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="no data"):
-            interface.status()
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="no data"):
+            account.status()
 
     httpserver.expect_oneshot_request("/status").respond_with_json({"data": 12})
     with httpserver.wait():
-        with pytest.raises(python_gtmetrix2.GTmetrixAPIFailureException, match="non-user"):
-            interface.status()
+        with pytest.raises(python_gtmetrix2.APIFailureException, match="non-user"):
+            account.status()
 
 
-def test_interface_test_from_id(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_test_from_id(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
     test_json = {"type": "test", "id": "a", "attributes": {"n": 1}}
     httpserver.expect_oneshot_request("/tests/a").respond_with_json({"data": test_json})
     with httpserver.wait():
-        test = interface.testFromId("a")
+        test = account.testFromId("a")
     assert isinstance(test, python_gtmetrix2.Test)
     assert test["attributes"]["n"] == 1
 
 
-def test_interface_report_from_id(httpserver: HTTPServer):
-    interface = python_gtmetrix2.Interface("aaa", httpserver.url_for(""))
+def test_account_report_from_id(httpserver: HTTPServer):
+    account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
     report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {}}
     httpserver.expect_oneshot_request("/reports/a").respond_with_json({"data": report_json})
     with httpserver.wait():
-        report = interface.reportFromId("a")
+        report = account.reportFromId("a")
     assert isinstance(report, python_gtmetrix2.Report)
     assert report["attributes"]["n"] == 1

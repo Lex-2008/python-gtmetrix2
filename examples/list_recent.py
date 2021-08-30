@@ -5,11 +5,11 @@ import python_gtmetrix2
 
 
 def main(api_key):
-    interface = python_gtmetrix2.Interface(api_key)
+    account = python_gtmetrix2.Account(api_key)
 
     print("=== fetching tests ===")
 
-    tests = interface.list_tests()
+    tests = account.list_tests()
 
     if len(tests) == 0:
         print("No tests found! Note that only tests started within last 24 hours are available via this API.")

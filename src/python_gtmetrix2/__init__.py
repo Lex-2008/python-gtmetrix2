@@ -11,10 +11,10 @@ Primary classes
 User of this library is expected to interact primarily with the following three
 classes:
 
-* :class:`Interface`, which is instantiated with your API key and is used for
+* :class:`Account`, which is instantiated with your API key and is used for
   all API calls which don't operate on a particular test or report. For
-  example, API calls to start a *new* test (:meth:`Interface.start_test`), or
-  to get account information (:meth:`Interface.status`).
+  example, API calls to start a *new* test (:meth:`Account.start_test`), or
+  to get account information (:meth:`Account.status`).
 
 * :class:`Test`, which corresponds to a requested test (which might be still
   running or already finished).
@@ -23,8 +23,8 @@ classes:
 
 Note that usually objects of :class:`Test` and :class:`Report` classes should
 not be instantiated directly - users of this library are expected to use
-methods of :class:`Interface` class instead: for example,
-:meth:`Interface.start_test` to start a test, or :meth:`Interface.list_tests`
+methods of :class:`Account` class instead: for example,
+:meth:`Account.start_test` to start a test, or :meth:`Account.list_tests`
 to get a list of recent tests. And then :meth:`Test.getreport` to get a report
 for a finished test.
 
@@ -36,7 +36,7 @@ Exceptions
 ----------
 
 Basically, there are two main exception classes:
-:exc:`GTmetrixAPIFailureException` and :exc:`GTmetrixAPIErrorException`.
+:exc:`APIFailureException` and :exc:`APIErrorException`.
 
 First of them (the "failure" one) happens when API server returns something
 what was not expected by the library: for example, when library expects to
@@ -47,24 +47,24 @@ Second one (the "error" one) happens when API server returns (properly
 formatted) error response.  In that case, it is assumed that it was a problem
 with how the library is used.  But if you disagree - please file an issue.
 
-Both of these classes are based on the :exc:`BaseGTmetrixAPIException`, and has
+Both of these classes are based on the :exc:`BaseAPIException`, and has
 the following attributes usually set: ``request``, ``response``, ``data``.
 ``request`` and ``response`` link to relevant instances of
 :class:`urllib.request.Request`, :class:`http.client.HTTPResponse`, or
 :class:`urllib.error.HTTPError`, if they were available at the moment when the
-exception was raised. In addition to this, :exc:`GTmetrixAPIFailureException`
+exception was raised. In addition to this, :exc:`APIFailureException`
 has a ``message`` attribute, which contains a text description of the problem.
 
-Also, there is a :exc:`GTmetrixAPIErrorFailureException`, which is raised if
-:exc:`GTmetrixAPIFailureException` (i.e. unparsable or invalid JSON) happens.
-It's a subclass of :class:`GTmetrixAPIFailureException`, so you don't need to
+Also, there is a :exc:`APIErrorFailureException`, which is raised if
+:exc:`APIFailureException` (i.e. unparsable or invalid JSON) happens.
+It's a subclass of :class:`APIFailureException`, so you don't need to
 care about it, unless you're interested in it.
 
 Further details
 ---------------
 
 All requests are made by the instance of :class:`Requestor` which is created by
-the :class:`Interface` class and is usually shared between all instances
+the :class:`Account` class and is usually shared between all instances
 created from it.
 
 It also uses :class:`NoRedirect` to avoid redirections when API returns both
@@ -93,7 +93,8 @@ import time
 import urllib.request
 
 
-class BaseGTmetrixAPIException(Exception):
+
+class BaseAPIException(Exception):
     """Base class for all exceptions in this library.
     Passed parameter are available as attributes.
 
@@ -116,7 +117,7 @@ class BaseGTmetrixAPIException(Exception):
         self.extra = extra
 
 
-class GTmetrixAPIFailureException(BaseGTmetrixAPIException):
+class APIFailureException(BaseAPIException):
     """API server returned an unexpected response.
 
     There was a disagreement between API server and this library:
@@ -124,7 +125,7 @@ class GTmetrixAPIFailureException(BaseGTmetrixAPIException):
 
     :param str message: text explaining the error.
 
-    other parameters are same as for parent class :exc:`BaseGTmetrixAPIException`.
+    other parameters are same as for parent class :exc:`BaseAPIException`.
     """
 
     def __init__(self, message, *args):
@@ -132,19 +133,19 @@ class GTmetrixAPIFailureException(BaseGTmetrixAPIException):
         self.message = message
 
 
-class GTmetrixAPIErrorFailureException(GTmetrixAPIFailureException):
-    """GTmetrixAPIFailureException happened when processing an error response.
+class APIErrorFailureException(APIFailureException):
+    """APIFailureException happened when processing an error response.
 
-    Parameters are the same as for parent class :exc:`GTmetrixAPIFailureException`.
+    Parameters are the same as for parent class :exc:`APIFailureException`.
     """
 
     pass
 
 
-class GTmetrixAPIErrorException(BaseGTmetrixAPIException):
+class APIErrorException(BaseAPIException):
     """API returned an error.
 
-    Parameters are the same as for parent class :exc:`BaseGTmetrixAPIException`.
+    Parameters are the same as for parent class :exc:`BaseAPIException`.
 
     You can inspect error details in the `data` attribute of this object,
     it usually looks like this:
@@ -182,9 +183,9 @@ class Requestor:
     and retries on "429" responses.
 
     Note that usually objects of this class should not be instantiated
-    directly - you can use methods of :class:`Interface` class instead.
+    directly - you can use methods of :class:`Account` class instead.
 
-    Parameters are the same as for :class:`Interface`
+    Parameters are the same as for :class:`Account`
     """
     def __init__(self, api_key, base_url="https://gtmetrix.com/api/2.0/", sleep_function=time.sleep):
         self.base_url = base_url
@@ -225,46 +226,46 @@ class Requestor:
             # That's an error
             data = response.read()
             if __debug__ and len(data) == 0:
-                raise GTmetrixAPIErrorFailureException("API returned empty response", request, response, data)
+                raise APIErrorFailureException("API returned empty response", request, response, data)
             try:
                 json_data = json.loads(data.decode())
             except (json.JSONDecodeError, UnicodeError) as e:
-                raise GTmetrixAPIErrorFailureException("API returned unparsable JSON", request, response, data) from e
+                raise APIErrorFailureException("API returned unparsable JSON", request, response, data) from e
             if __debug__:
                 if "errors" not in json_data:
-                    raise GTmetrixAPIErrorFailureException(
+                    raise APIErrorFailureException(
                         "API returned no errors with an HTTP code 400 or over", request, response, json_data
                     )
                 if not isinstance(json_data["errors"], list):
-                    raise GTmetrixAPIErrorFailureException(
+                    raise APIErrorFailureException(
                         "API returned non-list of errors", request, response, json_data
                     )
                 if len(json_data["errors"]) < 1:
-                    raise GTmetrixAPIErrorFailureException(
+                    raise APIErrorFailureException(
                         "API returned empty list of errors", request, response, json_data
                     )
                 if not all((dict_is_error(x) for x in json_data["errors"])):
-                    raise GTmetrixAPIErrorFailureException(
+                    raise APIErrorFailureException(
                         "API returned non-error in error list", request, response, json_data
                     )
-            raise GTmetrixAPIErrorException(request, response, json_data)
+            raise APIErrorException(request, response, json_data)
         if not kwargs.get("return_data", True):
             return (response, None)
         data = response.read()
         # TODO: retry reads until the one which returns nothing
         if __debug__ and len(data) == 0:
-            raise GTmetrixAPIFailureException("API returned empty response", request, response, data)
+            raise APIFailureException("API returned empty response", request, response, data)
         try:
             json_data = json.loads(data.decode())
         except (json.JSONDecodeError, UnicodeError) as e:
-            raise GTmetrixAPIFailureException("API returned unparsable JSON", request, response, data) from e
+            raise APIFailureException("API returned unparsable JSON", request, response, data) from e
         if __debug__:
             if "errors" in json_data:
-                raise GTmetrixAPIFailureException(
+                raise APIFailureException(
                     "API returned errors with an HTTP code %s under 400" % response_code, request, response, json_data
                 )
             if "data" not in json_data:
-                raise GTmetrixAPIFailureException("API returned no data", request, response, json_data)
+                raise APIFailureException("API returned no data", request, response, json_data)
         return (response, json_data)
 
     def _retry_request(self, url, retries=10, **kwargs):
@@ -274,7 +275,7 @@ class Requestor:
         # other parameters are same as for _plain_request
         try:
             return self._plain_request(url, **kwargs)
-        except GTmetrixAPIErrorException as e:
+        except APIErrorException as e:
             for error in e.data["errors"]:
                 if error["status"] != "429":
                     # we're interested only in 429
@@ -419,7 +420,7 @@ class Object(dict):
     """Base class for :class:`Test` and :class:`Report` classes.
 
     Note that usually objects of these classes should not be instantiated
-    directly - you can use methods of :class:`Interface` class instead.
+    directly - you can use methods of :class:`Account` class instead.
 
     Also note that since they are descendants of the :class:`dict`, you can
     simply :func:`json.dumps` them to inspect their internals.
@@ -458,7 +459,7 @@ class Test(Object):
         (response, response_data) = self._requestor.request("tests/" + self["id"])
         if __debug__:
             if not dict_is_test(response_data["data"]):
-                raise GTmetrixAPIFailureException(
+                raise APIFailureException(
                     "API returned non-test for a test",
                     None,
                     response,
@@ -506,7 +507,7 @@ class Test(Object):
         (response, response_data) = requestor.request(url)
         if __debug__:
             if not dict_is_test(response_data["data"]):
-                raise GTmetrixAPIFailureException("API returned non-test for a test", None, response, response_data)
+                raise APIFailureException("API returned non-test for a test", None, response, response_data)
         return Test(requestor, response_data["data"], sleep_function)
 
 
@@ -523,7 +524,7 @@ class Report(Object):
         (response, response_data) = requestor.request(url)
         if __debug__:
             if not dict_is_report(response_data["data"]):
-                raise GTmetrixAPIFailureException(
+                raise APIFailureException(
                     "API returned non-report for a report",
                     None,
                     response,
@@ -550,7 +551,7 @@ class Report(Object):
         # TODO: this is same as when starting a test
         if __debug__:
             if not dict_is_test(response_data["data"]):
-                raise GTmetrixAPIFailureException(
+                raise APIFailureException(
                     "API returned non-test for a retest",
                     None,
                     response,
@@ -600,7 +601,7 @@ class Report(Object):
             shutil.copyfileobj(response, destination)
 
 
-class Interface:
+class Account:
     """Main entry point into this library
 
     :param api_key: your GTmetrix API key.
@@ -634,13 +635,13 @@ class Interface:
         location, desired report depth, etc) as extra keyword arguments, like
         this:
 
-        >>> interface.start_test('http://example.com', report='none')
+        >>> account.start_test('http://example.com', report='none')
 
         Or, if you prefer having a dict, you can use the ``**kwargs``-style
         Python expansion, like this:
 
         >>> parameters={'location': '1', 'browser': '3', 'adblock': '1'}
-        >>> interface.start_test('http://example.com', **parameters)
+        >>> account.start_test('http://example.com', **parameters)
 
         Note that this method does not wait for the test to finish.  For that,
         call :meth:`test.fetch(wait_for_complete=True) <Test.fetch>` after
@@ -660,7 +661,7 @@ class Interface:
         )
         if __debug__:
             if not dict_is_test(response_data["data"]):
-                raise GTmetrixAPIFailureException(
+                raise APIFailureException(
                     "API returned non-test for a started test",
                     None,
                     response,
@@ -698,13 +699,13 @@ class Interface:
 
             >>> import time
             >>> now = int(time.time())
-            >>> tests = interface.list_tests(
+            >>> tests = account.list_tests(
             ...     filter={"state": "completed", "created:gt": (now-10*60)})
 
             To get all tests which ended up with an error, and print the error
             message for each of them:
 
-            >>> tests = interface.list_tests(filter={"state": "error"})
+            >>> tests = account.list_tests(filter={"state": "error"})
             >>> for test in tests:
             ...     print("Test %s failed: %s" % (test["id"], test["attributes"]["error"]))
 
@@ -725,14 +726,14 @@ class Interface:
         #  next_link=request_data.get(..., None)
         if __debug__:
             if not isinstance(response_data["data"], list):
-                raise GTmetrixAPIFailureException(
+                raise APIFailureException(
                     "API returned non-list for a list of tests",
                     None,
                     response,
                     response_data,
                 )
             if not all((dict_is_test(test) for test in response_data["data"])):
-                raise GTmetrixAPIFailureException(
+                raise APIFailureException(
                     "API returned non-test in a list of tests",
                     None,
                     response,
@@ -748,8 +749,8 @@ class Interface:
 
         :example:
 
-            >>> interface = Interface("e8ddc55d93eb0e8281b255ea236dcc4f")
-            >>> status = interface.status()
+            >>> account = Account("e8ddc55d93eb0e8281b255ea236dcc4f")
+            >>> status = account.status()
             >>> print(json.dumps(status, indent=2))
 
             would print something like this:
@@ -768,7 +769,7 @@ class Interface:
         (response, response_data) = self._requestor.request("status")
         if __debug__:
             if not dict_is_user(response_data["data"]):
-                raise GTmetrixAPIFailureException(
+                raise APIFailureException(
                     "API returned non-user for status",
                     None,
                     response,

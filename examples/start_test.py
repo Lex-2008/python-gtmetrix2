@@ -5,11 +5,11 @@ import python_gtmetrix2
 
 
 def main(api_key, urls):
-    interface = python_gtmetrix2.Interface(api_key)
+    account = python_gtmetrix2.Account(api_key)
 
     print("=== starting tests ===")
 
-    tests = [interface.start_test(url) for url in urls]
+    tests = [account.start_test(url) for url in urls]
     for test in tests:
         print(json.dumps(test))
 

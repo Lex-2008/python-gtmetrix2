@@ -5,9 +5,9 @@ import python_gtmetrix2
 
 
 def main(api_key):
-    interface = python_gtmetrix2.Interface(api_key)
+    account = python_gtmetrix2.Account(api_key)
 
-    status = interface.status()
+    status = account.status()
 
     print(json.dumps(status, indent=2))
 

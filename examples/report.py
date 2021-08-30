@@ -5,9 +5,9 @@ import python_gtmetrix2
 
 
 def main(api_key, report_id, operation="print", *args):
-    interface = python_gtmetrix2.Interface(api_key)
+    account = python_gtmetrix2.Account(api_key)
 
-    report = interface.reportFromId(report_id)
+    report = account.reportFromId(report_id)
 
     if operation == "print":
         print(json.dumps(report, indent=2))
