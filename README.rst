@@ -6,26 +6,34 @@ python-gtmetrix2
 `v2.0 <https://gtmetrix.com/api/docs/2.0/>`__ (hence 2 in the name).
 
 |Build Status| |codecov| |Code style: black| |Documentation Status|
+|License: MIT|
 
-|PyPI - Latest Version| |PyPI - Python Version| |PyPI - Downloads| |License: MIT|
+|PyPI - Latest Version| |PyPI - Python Version|
+|PyPI - Downloads Monthly| |PyPI - Downloads Daily|
+
 
 .. |Build Status| image:: https://app.travis-ci.com/Lex-2008/python-gtmetrix2.svg?branch=main
    :target: https://app.travis-ci.com/Lex-2008/python-gtmetrix2
 .. |codecov| image:: https://codecov.io/gh/Lex-2008/python-gtmetrix2/branch/main/graph/badge.svg?token=N8P5Z08497
    :target: https://codecov.io/gh/Lex-2008/python-gtmetrix2
-.. |Code style: black| image:: https://img.shields.io/badge/code_style-black_--l_118-green.svg
+.. |Code style: black| image:: https://img.shields.io/badge/code_style-black_--l_118-4c1.svg
    :target: https://github.com/psf/black
 .. |Documentation Status| image:: https://readthedocs.org/projects/python-gtmetrix2/badge/?version=latest
    :target: https://python-gtmetrix2.readthedocs.io/en/latest/?badge=latest
+.. |License: MIT| image:: https://img.shields.io/github/license/Lex-2008/python-gtmetrix2
+   :target: https://github.com/Lex-2008/python-gtmetrix2/blob/main/LICENSE
 
 .. |PyPI - Latest Version| image:: https://img.shields.io/pypi/v/python-gtmetrix2
    :target: https://pypi.org/project/python-gtmetrix2/
 .. |PyPI - Python Version| image:: https://img.shields.io/pypi/pyversions/python-gtmetrix2
    :target: https://pypi.org/project/python-gtmetrix2/
-.. |PyPI - Downloads| image:: https://img.shields.io/pypi/dm/python-gtmetrix2
+.. |PyPI - Downloads Monthly| image:: https://img.shields.io/pypi/dm/python-gtmetrix2
    :target: https://pypi.org/project/python-gtmetrix2/
-.. |License: MIT| image:: https://img.shields.io/pypi/l/python-gtmetrix2
+.. |PyPI - Downloads Daily| image:: https://img.shields.io/pypi/dd/python-gtmetrix2
    :target: https://pypi.org/project/python-gtmetrix2/
+.. |PyPi - License| image:: https://img.shields.io/pypi/l/python-gtmetrix2
+   :target: https://pypi.org/project/python-gtmetrix2/
+
 
 Inspired by the `library with a similar
 name <https://github.com/aisayko/python-gtmetrix>`__.
