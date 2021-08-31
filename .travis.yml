@@ -12,14 +12,14 @@ script:
 after_success:
   - codecov
 deploy:
-    # TEST provider - deploys to test.pypi.org from plain branch pushes
+    # TEST provider - deploys to test.pypi.org from pushes to main branch
   - provider: pypi
     username: "__token__"
     distributions: "sdist bdist_wheel"
     server: "https://test.pypi.org/legacy/"
     edge: true
     on:
-      all_branches: true
+      branch: main
       python: "3.9"
     # PROD provider - deploys to pypi.org from tag pushes
   - provider: pypi
