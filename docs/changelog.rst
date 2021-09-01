@@ -7,6 +7,14 @@ Note that according to `semver <https://semver.org/>`__, as long as major
 version is 0, any breaking changes are possible.  When this library sees a
 first user, its major version will be bumped to 1.
 
+0.2.0
+-----
+
+* Argument for the :meth:`Test.fetch` was renamed from ``wait_for_complete`` to
+  ``wait_for_completion``
+* Bugfix: :meth:`Test.fetch` was following redirects when it wasn't supposed
+  to. Due to this, it was fetching "report" JSON and crashed.
+
 0.1.2
 -----
 
