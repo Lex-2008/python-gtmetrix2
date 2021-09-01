@@ -191,10 +191,12 @@ class Requestor:
         self.base_url = base_url
         password_manager = urllib.request.HTTPPasswordMgrWithDefaultRealm()
         password_manager.add_password(realm=None, uri=base_url, user=api_key, passwd="")
-        auth_handler = urllib.request.HTTPBasicAuthHandler(password_manager)
+        # NOTE: different openers must use different auth_handlers
+        auth_handler1 = urllib.request.HTTPBasicAuthHandler(password_manager)
+        auth_handler2 = urllib.request.HTTPBasicAuthHandler(password_manager)
 
-        self._opener = urllib.request.build_opener(auth_handler, NoRedirect)
-        self._redirect_opener = urllib.request.build_opener(auth_handler)
+        self._opener = urllib.request.build_opener(auth_handler1, NoRedirect)
+        self._redirect_opener = urllib.request.build_opener(auth_handler2)
         self._sleep = sleep_function
 
     def _plain_request(self, url, opener, **kwargs):

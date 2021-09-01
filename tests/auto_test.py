@@ -34,6 +34,26 @@ def test_requestor_positive(httpserver: HTTPServer):
             requestor.request("/oneshot")
         assert e.value.data["errors"][0]["status"] == "404"
 
+    # test that redirecrs are NOT followed when not asked to
+    httpserver.expect_oneshot_request("/oneshot").respond_with_json(
+        {"data": {"value": 42}}, status=303, headers={"Location": httpserver.url_for("/whatever")}
+            )
+    with httpserver.wait():
+        (response, response_data) = requestor.request("oneshot", follow_redirects=False)
+    print('x')
+    print(response.headers)
+    assert response_data["data"]["value"] == 42
+
+    # test that redirecrs ARE followed when asked to
+    httpserver.expect_ordered_request("/ordered").respond_with_json(
+        {"data": {"value": 42}}, status=303, headers={"Location": httpserver.url_for("/ordered")}
+            )
+    httpserver.expect_ordered_request("/ordered").respond_with_json({"data": {"value": 43}})
+    with httpserver.wait():
+        (response, response_data) = requestor.request("ordered", follow_redirects=True)
+    assert response_data["data"]["value"] == 43
+
+
 
 def test_requestor_negative(httpserver: HTTPServer):
     requestor = python_gtmetrix2.Requestor("aaa", httpserver.url_for(""))
@@ -391,6 +411,13 @@ def test_report_getresource(httpserver: HTTPServer, tmp_path):
             result = fp.read()
     assert result == "x"
 
+    httpserver.expect_ordered_request("/reports/b/resources/a").respond_with_data(
+        '', status=302, headers={"Location": "/reports/b/resources/a"}
+            )
+    httpserver.expect_ordered_request("/reports/b/resources/a").respond_with_data("x")
+    with httpserver.wait():
+        result = report.getresource("a")
+    assert result == b"x"
 
 def test_account_start_positive(httpserver: HTTPServer):
     account = python_gtmetrix2.Account("aaa", httpserver.url_for(""))
