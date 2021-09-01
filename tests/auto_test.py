@@ -174,10 +174,10 @@ def test_test_fetch(httpserver: HTTPServer):
     assert test["attributes"]["n"] == 2
 
     test_json["data"]["attributes"]["n"] = 3
-    # should not wait, even when wait_for_complete=True passed
+    # should not wait, even when wait_for_completion=True passed
     httpserver.expect_oneshot_request("/tests/a").respond_with_json(test_json, status=200)
     with httpserver.wait():
-        test.fetch(wait_for_complete=True)
+        test.fetch(wait_for_completion=True)
     assert test["attributes"]["n"] == 3
 
     test_json["data"]["attributes"]["n"] = 4

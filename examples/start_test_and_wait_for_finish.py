@@ -16,7 +16,7 @@ def main(api_key, urls):
     print("=== wait for tests to finish ===")
 
     for test in tests:
-        test.fetch(wait_for_complete=True)
+        test.fetch(wait_for_completion=True)
 
     print("=== fetching report for each test ===")
 

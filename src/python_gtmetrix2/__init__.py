@@ -447,10 +447,10 @@ class Object(dict):
 class Test(Object):
     _report = None
 
-    def fetch(self, wait_for_complete=False, retries=10):
+    def fetch(self, wait_for_completion=False, retries=10):
         """Ask API server for updated data regarding this test.
 
-        :param bool, optional wait_for_complete: 
+        :param bool, optional wait_for_completion: 
             Whether to wait until the test is finished, defaults to False
 
         :param int, optional retries:
@@ -468,11 +468,11 @@ class Test(Object):
                 )
         self.update(response_data["data"])
         delay = response.getheader("Retry-After")
-        if not wait_for_complete or delay is None or retries <= 0:
+        if not wait_for_completion or delay is None or retries <= 0:
             return
         delay = max(1, int(delay))
         self._sleep(delay)
-        return self.fetch(wait_for_complete, retries - 1)
+        return self.fetch(wait_for_completion, retries - 1)
 
     def getreport(self):
         """Returns Report object for this test, if it is available.
@@ -482,7 +482,7 @@ class Test(Object):
         method :meth:`fetch <Test.fetch>` first.
 
         Also note that even if report is *finished* (i.e. after
-        :meth:`fetch(wait_for_complete=True) <Test.fetch>` returns), it's not
+        :meth:`fetch(wait_for_completion=True) <Test.fetch>` returns), it's not
         guaranteed that it *completed successfully* - it could have finished
         with an error - for example, due to certificate or connection error.
         In that case, your test will have `status = "error"` attribute, and
@@ -644,7 +644,7 @@ class Account:
         >>> account.start_test('http://example.com', **parameters)
 
         Note that this method does not wait for the test to finish.  For that,
-        call :meth:`test.fetch(wait_for_complete=True) <Test.fetch>` after
+        call :meth:`test.fetch(wait_for_completion=True) <Test.fetch>` after
         calling this method.
 
         :returns: a new instance of :class:`Test` corresponding to a new running test.
