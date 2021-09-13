@@ -7,6 +7,12 @@ Note that according to `semver <https://semver.org/>`__, as long as major
 version is 0, any breaking changes are possible.  When this library sees a
 first user, its major version will be bumped to 1.
 
+0.3.0
+-----
+
+* library wa split into modules for easier differentiation between public and
+  private parts
+
 0.2.0
 -----
 

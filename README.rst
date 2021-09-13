@@ -48,12 +48,12 @@ via pip
 
     pip install python-gtmetrix2
 
-file copy
-~~~~~~~~~
+manual
+~~~~~~
 
-This library has zero dependencies and is contained within a single file, so you can just save
-`this <https://github.com/Lex-2008/python-gtmetrix2/blob/main/src/python_gtmetrix2/__init__.py>`__
-file as ``python_gtmetrix2.py`` in your project directory and ``import`` it
+* Clone or download and extract the repository
+
+* Copy the ``src/python-gtmetrix2`` directory to your project directory
 
 Usage:
 ------
