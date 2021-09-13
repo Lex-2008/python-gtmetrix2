@@ -1,3 +1,16 @@
+"""11
+Start multiple tests
+--------------------
+
+Example which shows how to start multiple tests in parallel, wait for them to
+finish, and fetch reports for tests that completed successfully.
+
+Note that GTmetrix limits the number of tests you can run in parallel (2
+concurrent tests on a Basic account, 8 concurrent tests on a PRO account).
+This example does not impose any concurrency limits by itself, but instead
+relies on GTmetrix API to reply with 429 HTTP error and retries.
+"""
+
 import sys
 import json
 
@@ -9,9 +22,11 @@ def main(api_key, urls):
 
     print("=== starting tests ===")
 
-    tests = [account.start_test(url) for url in urls]
-    for test in tests:
+    tests = []
+    for url in urls:
+        test = account.start_test(url)
         print(json.dumps(test))
+        tests.append(test)
 
     print("=== wait for tests to finish ===")
 

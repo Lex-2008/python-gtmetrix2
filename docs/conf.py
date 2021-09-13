@@ -70,3 +70,6 @@ html_theme_path = sphinx_glpi_theme.get_html_themes_path()
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+import dochelper
+dochelper.list_allexamples('../examples', 'examples.rst')

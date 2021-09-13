@@ -15,6 +15,7 @@ For a more technical explanation, dive into module reference.
 
    intro
    python_gtmetrix2
+   examples
    hacking
    changelog
    genindex

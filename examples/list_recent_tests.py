@@ -1,3 +1,14 @@
+"""12
+List recent tests
+-----------------
+
+Example which shows what can be done with result of :meth:`Account.list_tests` method.
+
+You can either treat it as a JSON-like `dict` object, or use
+:meth:`Test.getreport` function to get corresponding report, *if it exists*.
+:class:`Report` is also a JSON-like `dict` object.
+"""
+
 import sys
 import json
 

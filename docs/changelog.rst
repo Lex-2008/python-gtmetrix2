@@ -12,6 +12,7 @@ first user, its major version will be bumped to 1.
 
 * library wa split into modules for easier differentiation between public and
   private parts
+* Docs: better examples exposure and overview.
 
 0.2.0
 -----
