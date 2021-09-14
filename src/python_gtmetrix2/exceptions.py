@@ -35,6 +35,7 @@ Reference
 ---------
 """
 
+
 class BaseAPIException(Exception):
     """Base class for all exceptions in this library.
     Passed parameter are available as attributes.

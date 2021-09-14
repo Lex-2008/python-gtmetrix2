@@ -27,6 +27,7 @@ import json
 
 import python_gtmetrix2
 
+
 def main(api_key, report_id, operation="print", *args):
     """Usage: %s api_key report_id [operation]
     or: %s api_key report_id getresource resource [filename]
@@ -64,8 +65,8 @@ def main(api_key, report_id, operation="print", *args):
     elif operation == "size":
         har = json.loads(report.getresource("net.har").decode())
         size_bytes = summarizeHar(har)
-        size_kb = size_bytes/1024
-        size_mb = size_kb/1024
+        size_kb = size_bytes / 1024
+        size_mb = size_kb / 1024
         print("Total size of all resources, uncompressed: %d bytes = %.1f kb = %.1f MB" % (size_bytes, size_kb, size_mb))
 
     else:

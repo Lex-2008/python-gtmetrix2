@@ -43,162 +43,6 @@ import time
 from .exceptions import *
 from ._internals import *
 
-class Test(Object):
-    _report = None
-
-    def fetch(self, wait_for_completion=False, retries=10):
-        """Ask API server for updated data regarding this test.
-
-        :param bool, optional wait_for_completion: 
-            Whether to wait until the test is finished, defaults to False
-
-        :param int, optional retries:
-            Number of retries before giving up, defaults to 10
-        """
-        (response, response_data) = self._requestor.request("tests/" + self["id"])
-        if __debug__:
-            if not dict_is_test(response_data["data"]):
-                raise APIFailureException(
-                    "API returned non-test for a test",
-                    None,
-                    response,
-                    response_data,
-                    self,
-                )
-        self.update(response_data["data"])
-        delay = response.getheader("Retry-After")
-        if not wait_for_completion or delay is None or retries <= 0:
-            return
-        delay = max(1, int(delay))
-        self._sleep(delay)
-        return self.fetch(wait_for_completion, retries - 1)
-
-    def getreport(self):
-        """Returns Report object for this test, if it is available.
-
-        Note that this function does not *check* whether the test has actually
-        completed since the last call to API.  For that, you should use
-        method :meth:`fetch <Test.fetch>` first.
-
-        Also note that even if report is *finished* (i.e. after
-        :meth:`fetch(wait_for_completion=True) <Test.fetch>` returns), it's not
-        guaranteed that it *completed successfully* - it could have finished
-        with an error - for example, due to certificate or connection error.
-        In that case, your test will have `status = "error"` attribute, and
-        also `error` attribute explaining what went wrong.
-
-        :rtype: :class:`Report` or None
-        """
-        if self._report is None:
-            if "links" in self and "report" in self["links"]:
-                self._report = Report._fromURL(self._requestor, self["links"]["report"], self._sleep)
-        return self._report
-
-    @classmethod
-    def _fromURL(cls, requestor, url, sleep_function=time.sleep):
-        """Given an URL, fetches it and returns an :class:`Test`
-
-        Note that currently only URLs under requestor's base_url are supported
-        """
-        if url.startswith(requestor.base_url):
-            url = url[len(requestor.base_url) :]
-        # TODO: fetching from external URL
-        (response, response_data) = requestor.request(url)
-        if __debug__:
-            if not dict_is_test(response_data["data"]):
-                raise APIFailureException("API returned non-test for a test", None, response, response_data)
-        return Test(requestor, response_data["data"], sleep_function)
-
-
-class Report(Object):
-    @classmethod
-    def _fromURL(cls, requestor, url, sleep_function=time.sleep):
-        """Given an URL, fetches it and returns an :class:`Report`
-
-        Note that currently only URLs under requestor's base_url are supported
-        """
-        if url.startswith(requestor.base_url):
-            url = url[len(requestor.base_url) :]
-        # TODO: fetching from external URL
-        (response, response_data) = requestor.request(url)
-        if __debug__:
-            if not dict_is_report(response_data["data"]):
-                raise APIFailureException(
-                    "API returned non-report for a report",
-                    None,
-                    response,
-                    response_data,
-                )
-        return Report(requestor, response_data["data"], sleep_function)
-
-    def delete(self):
-        """Delete the report.
-
-        Note that after executing this method, all other methods should error
-        with a "404 Report not found" error.
-        """
-        self._requestor.request("reports/" + self["id"], method="DELETE", return_data=False)
-
-    def retest(self):
-        """Retest the report.
-
-        :returns: a new instance of :class:`Test` corresponding to a new running test.
-
-        :rtype: Test
-        """
-        (response, response_data) = self._requestor.request("reports/%s/retest" % self["id"], method="POST")
-        # TODO: this is same as when starting a test
-        if __debug__:
-            if not dict_is_test(response_data["data"]):
-                raise APIFailureException(
-                    "API returned non-test for a retest",
-                    None,
-                    response,
-                    response_data,
-                )
-        test = Test(self._requestor, response_data["data"], self._sleep)
-        return test
-
-    def getresource(self, name, destination=None):
-        """Get a report resource (such as a PDF file, video, etc)
-
-        Depending on the value of ``destination`` parameter, it might be saved
-        to a file, a file-like object, or returned to the caller.  Be careful
-        with the latter in case a file is too big, though.
-
-        :param str name:
-            Name of the desired resource.
-            You can find full list at the GTmetrix API documentation:
-            <https://gtmetrix.com/api/docs/2.0/#api-report-resource>
-
-        :param destination:
-            Where to save the downloaded resource. If it is ``None``, then
-            resource is completely downloaded into RAM and returned to the
-            caller.  If it is a string, then the resource is saved into a file
-            with that name.  If it is a file-like object, then
-            :func:`shutil.copyfileobj` is used to copy the resource into that
-            object.
-        :type destination: None or str or a file-like object
-
-        """
-        (response, response_data) = self._requestor.request(
-            "reports/%s/resources/%s" % (self["id"], name),
-            follow_redirects=True,
-            return_data=False,
-        )
-        if destination is None:
-            data = b""
-            chunk = response.read()
-            while chunk:
-                data += chunk
-                chunk = response.read()
-            return data
-        elif isinstance(destination, str):
-            with open(destination, "wb") as destination_file:
-                shutil.copyfileobj(response, destination_file)
-        else:
-            shutil.copyfileobj(response, destination)
-
 
 class Account:
     """Main entry point into this library
@@ -216,6 +60,7 @@ class Account:
         logging or notification of a delayed request, defaults to
         :func:`time.sleep`
     """
+
     def __init__(
         self,
         api_key: str,
@@ -225,7 +70,7 @@ class Account:
         self._requestor = Requestor(api_key, base_url, sleep_function)
         self._sleep = sleep_function
 
-    def start_test(self, url:str, **attributes) -> Test:
+    def start_test(self, url: str, **attributes) -> "Test":
         """Start a Test
 
         :param str url: the URL to test.
@@ -401,3 +246,160 @@ class Account:
         return Report._fromURL(
             self._requestor, self._requestor.base_url + "/reports/" + report_id, sleep_function=self._sleep
         )
+
+
+class Test(Object):
+    _report = None
+
+    def fetch(self, wait_for_completion=False, retries=10):
+        """Ask API server for updated data regarding this test.
+
+        :param bool, optional wait_for_completion:
+            Whether to wait until the test is finished, defaults to False
+
+        :param int, optional retries:
+            Number of retries before giving up, defaults to 10
+        """
+        (response, response_data) = self._requestor.request("tests/" + self["id"])
+        if __debug__:
+            if not dict_is_test(response_data["data"]):
+                raise APIFailureException(
+                    "API returned non-test for a test",
+                    None,
+                    response,
+                    response_data,
+                    self,
+                )
+        self.update(response_data["data"])
+        delay = response.getheader("Retry-After")
+        if not wait_for_completion or delay is None or retries <= 0:
+            return
+        delay = max(1, int(delay))
+        self._sleep(delay)
+        return self.fetch(wait_for_completion, retries - 1)
+
+    def getreport(self):
+        """Returns Report object for this test, if it is available.
+
+        Note that this function does not *check* whether the test has actually
+        completed since the last call to API.  For that, you should use
+        method :meth:`fetch <Test.fetch>` first.
+
+        Also note that even if report is *finished* (i.e. after
+        :meth:`fetch(wait_for_completion=True) <Test.fetch>` returns), it's not
+        guaranteed that it *completed successfully* - it could have finished
+        with an error - for example, due to certificate or connection error.
+        In that case, your test will have `status = "error"` attribute, and
+        also `error` attribute explaining what went wrong.
+
+        :rtype: :class:`Report` or None
+        """
+        if self._report is None:
+            if "links" in self and "report" in self["links"]:
+                self._report = Report._fromURL(self._requestor, self["links"]["report"], self._sleep)
+        return self._report
+
+    @classmethod
+    def _fromURL(cls, requestor, url, sleep_function=time.sleep):
+        """Given an URL, fetches it and returns an :class:`Test`
+
+        Note that currently only URLs under requestor's base_url are supported
+        """
+        if url.startswith(requestor.base_url):
+            url = url[len(requestor.base_url) :]
+        # TODO: fetching from external URL
+        (response, response_data) = requestor.request(url)
+        if __debug__:
+            if not dict_is_test(response_data["data"]):
+                raise APIFailureException("API returned non-test for a test", None, response, response_data)
+        return Test(requestor, response_data["data"], sleep_function)
+
+
+class Report(Object):
+    @classmethod
+    def _fromURL(cls, requestor, url, sleep_function=time.sleep):
+        """Given an URL, fetches it and returns an :class:`Report`
+
+        Note that currently only URLs under requestor's base_url are supported
+        """
+        if url.startswith(requestor.base_url):
+            url = url[len(requestor.base_url) :]
+        # TODO: fetching from external URL
+        (response, response_data) = requestor.request(url)
+        if __debug__:
+            if not dict_is_report(response_data["data"]):
+                raise APIFailureException(
+                    "API returned non-report for a report",
+                    None,
+                    response,
+                    response_data,
+                )
+        return Report(requestor, response_data["data"], sleep_function)
+
+    def delete(self):
+        """Delete the report.
+
+        Note that after executing this method, all other methods should error
+        with a "404 Report not found" error.
+        """
+        self._requestor.request("reports/" + self["id"], method="DELETE", return_data=False)
+
+    def retest(self):
+        """Retest the report.
+
+        :returns: a new instance of :class:`Test` corresponding to a new running test.
+
+        :rtype: Test
+        """
+        (response, response_data) = self._requestor.request("reports/%s/retest" % self["id"], method="POST")
+        # TODO: this is same as when starting a test
+        if __debug__:
+            if not dict_is_test(response_data["data"]):
+                raise APIFailureException(
+                    "API returned non-test for a retest",
+                    None,
+                    response,
+                    response_data,
+                )
+        test = Test(self._requestor, response_data["data"], self._sleep)
+        return test
+
+    def getresource(self, name, destination=None):
+        """Get a report resource (such as a PDF file, video, etc)
+
+        Depending on the value of ``destination`` parameter, it might be saved
+        to a file, a file-like object, or returned to the caller.  Be careful
+        with the latter in case a file is too big, though.
+
+        :param str name:
+            Name of the desired resource.
+            You can find full list at the GTmetrix API documentation:
+            <https://gtmetrix.com/api/docs/2.0/#api-report-resource>
+
+        :param destination:
+            Where to save the downloaded resource. If it is ``None``, then
+            resource is completely downloaded into RAM and returned to the
+            caller.  If it is a string, then the resource is saved into a file
+            with that name.  If it is a file-like object, then
+            :func:`shutil.copyfileobj` is used to copy the resource into that
+            object.
+        :type destination: None or str or a file-like object
+
+        """
+        (response, response_data) = self._requestor.request(
+            "reports/%s/resources/%s" % (self["id"], name),
+            follow_redirects=True,
+            return_data=False,
+        )
+        if destination is None:
+            data = b""
+            chunk = response.read()
+            while chunk:
+                data += chunk
+                chunk = response.read()
+            return data
+        elif isinstance(destination, str):
+            with open(destination, "wb") as destination_file:
+                shutil.copyfileobj(response, destination_file)
+        else:
+            shutil.copyfileobj(response, destination)

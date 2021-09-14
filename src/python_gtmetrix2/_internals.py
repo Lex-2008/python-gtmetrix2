@@ -39,10 +39,12 @@ import urllib.request
 
 from .exceptions import *
 
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     """Helper class for avoiding redirection on 30x responses.
     From https://stackoverflow.com/a/52086806
     """
+
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         """Returns None to avoid redirection."""
         return None
@@ -59,6 +61,7 @@ class Requestor:
 
     Parameters are the same as for :class:`Account`
     """
+
     def __init__(self, api_key, base_url="https://gtmetrix.com/api/2.0/", sleep_function=time.sleep):
         self.base_url = base_url
         password_manager = urllib.request.HTTPPasswordMgrWithDefaultRealm()
@@ -111,13 +114,9 @@ class Requestor:
                         "API returned no errors with an HTTP code 400 or over", request, response, json_data
                     )
                 if not isinstance(json_data["errors"], list):
-                    raise APIErrorFailureException(
-                        "API returned non-list of errors", request, response, json_data
-                    )
+                    raise APIErrorFailureException("API returned non-list of errors", request, response, json_data)
                 if len(json_data["errors"]) < 1:
-                    raise APIErrorFailureException(
-                        "API returned empty list of errors", request, response, json_data
-                    )
+                    raise APIErrorFailureException("API returned empty list of errors", request, response, json_data)
                 if not all((dict_is_error(x) for x in json_data["errors"])):
                     raise APIErrorFailureException(
                         "API returned non-error in error list", request, response, json_data
@@ -143,7 +142,7 @@ class Requestor:
         return (response, json_data)
 
     def _retry_request(self, url, retries=10, **kwargs):
-        """ Wrapper around self._plain_request which catches "429 Rate limit exceeded" errors
+        """Wrapper around self._plain_request which catches "429 Rate limit exceeded" errors
         and retries after specified time, up to max retries.
         """
         # other parameters are same as for _plain_request
@@ -182,7 +181,7 @@ class Requestor:
         :param data:
             data to send as request body (usually with a POST request),
             defaults to None
-        :type data: dict (to be JSON-encoded), string or bytes, optional 
+        :type data: dict (to be JSON-encoded), string or bytes, optional
 
         :param str, optional method:
             method to use for request ("GET", "POST", etc.), defaults to None
@@ -312,8 +311,8 @@ class Object(dict):
         logging or notification of a delayed request, defaults to
         :func:`time.sleep`
     """
+
     def __init__(self, requestor, data, sleep_function=time.sleep):
         super().__init__(**data)
         self._requestor = requestor
         self._sleep = sleep_function
-
