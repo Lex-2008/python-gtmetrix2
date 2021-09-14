@@ -1,5 +1,7 @@
-Introdunction
-=============
+Introduction
+============
+
+.. include:: warn.txt
 
 .. currentmodule:: python_gtmetrix2
 

@@ -27,15 +27,17 @@ import json
 
 import python_gtmetrix2
 
-def usage(name):
-    print("Usage: %s api_key report_id [operation]" % name)
-    print("or: %s api_key report_id getresource resource [filename]" % name)
-    print("where operation is one of: print (default), delete, retest, size, getresource")
-    print("getresource operation requires one extra argument: what resource to get,")
-    print("and one optional: filename where to save it.")
-    print("If filename is not provided, resource is printed to stdout.")
-
 def main(api_key, report_id, operation="print", *args):
+    """Usage: %s api_key report_id [operation]
+    or: %s api_key report_id getresource resource [filename]
+
+    where operation is one of: print (default), delete, retest, size, getresource
+
+    getresource operation requires one extra argument: what resource to get,
+    and one optional: filename where to save it. If filename is not provided,
+    resource is printed to stdout.
+    """
+
     account = python_gtmetrix2.Account(api_key)
     report = account.reportFromId(report_id)
 
@@ -73,6 +75,7 @@ def main(api_key, report_id, operation="print", *args):
 
 
 def getresource(report, resource, filename=sys.stdout.buffer):
+    """Gets report resource and saves it to filename (stdout by default)"""
     report.getresource(resource, filename)
 
 
@@ -83,7 +86,7 @@ def summarizeHar(har):
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        usage(sys.argv[0])
+        print(main.__doc__ % (sys.argv[0], sys.argv[0]))
         exit()
 
     main(*sys.argv[1:])

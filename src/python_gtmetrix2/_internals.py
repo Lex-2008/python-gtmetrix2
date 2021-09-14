@@ -3,11 +3,11 @@
 # Internal details
 # ================
 """
-.. note::
+.. warning::
 
-   Contents of this module considered to be interval (by the author of the
-   library), and therefore may change without warning.  If your code uses
-   something in this module, please let me know.
+   Contents of this module considered to be internal and therefore may change
+   without warning. If your code uses something in this module, please let the
+   developer know about it so we could consider adding it to public API.
 
 Overview
 --------

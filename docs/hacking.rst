@@ -3,6 +3,12 @@ Contributing
 
 Any feedback or PRs are welcome
 
+.. note::
+
+   Saying that, I would greatly appreciate if you drop me a line (or open
+   guthub issue) before making changes - so we're on the same page and don't do
+   similar or incompatible changes.
+
 Testing
 -------
 

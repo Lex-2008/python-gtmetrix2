@@ -1,0 +1,8 @@
+.. warning::
+
+   As long as major version of this library is 0 (i.e. library has version
+   0.x.y), API is not guaranteed to be compatible between versions. When you
+   start using this library, **please** let the developer know about - I will
+   bump the major version to 1, and usuall `semver <https://semver.org/>`__
+   guatantees regarding version compatibility will be applied.
+

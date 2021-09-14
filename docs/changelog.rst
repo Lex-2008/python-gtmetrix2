@@ -1,11 +1,14 @@
 Recent changes
 ==============
 
-.. currentmodule:: python_gtmetrix2
+.. note::
 
-Note that according to `semver <https://semver.org/>`__, as long as major
-version is 0, any breaking changes are possible.  When this library sees a
-first user, its major version will be bumped to 1.
+   According to `semver <https://semver.org/>`__, as long as major version is
+   0, no guarantees regarding version compatibility are given. Any breaking
+   changes are possible. When this library sees a first user, its major version
+   will be bumped to 1.
+
+.. currentmodule:: python_gtmetrix2
 
 0.3.0
 -----
