@@ -8,6 +8,8 @@
 .. include:: ../README.rst
    :end-before: For a wordy introduction
 
+----
+
 For a wordy introduction into this library, please see next chapter.
 For more advanced examples, see the examples section.
 For a more technical explanation, dive into API reference.

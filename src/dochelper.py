@@ -52,10 +52,11 @@ def list_allexamples(directory, outfile):
     examples_to_print = sorted([example for example in examples if example.startswith('"""')])
 
     with open(outfile, "w") as f:
-        f.write(readfile(directory + "/examples.rst"))
+        f.write(readfile(directory + "/head.rst"))
         for example in examples_to_print:
             for line in list_example(example):
                 f.write(line + "\n")
+        f.write(readfile(directory + "/tail.rst"))
 
 
 if __name__ == "__main__":

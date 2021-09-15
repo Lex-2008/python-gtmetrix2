@@ -86,6 +86,4 @@ a video of loading website) to file or a variable in your program:
 
 ----
 
-That's all for now. More examples can be found in
-`examples <https://github.com/Lex-2008/python-gtmetrix2/tree/main/examples>`__
-directory in the repo.
+That's all for now. For more examples, please see next chapter.
