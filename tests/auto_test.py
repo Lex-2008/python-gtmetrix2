@@ -388,8 +388,13 @@ def test_report_retest_negative(httpserver: HTTPServer):
 
 def test_report_getresource(httpserver: HTTPServer, tmp_path):
     requestor = python_gtmetrix2._internals.Requestor("aaa", httpserver.url_for(""))
-    report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {}}
+    report_json = {"type": "report", "id": "b", "attributes": {"n": 1}, "links": {"r": httpserver.url_for("/t")}}
     report = python_gtmetrix2.Report(requestor, report_json)
+
+    httpserver.expect_oneshot_request("/t").respond_with_data("x")
+    with httpserver.wait():
+        result = report.getresource("r")
+    assert result == b"x"
 
     httpserver.expect_oneshot_request("/reports/b/resources/a").respond_with_data("x")
     with httpserver.wait():

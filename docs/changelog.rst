@@ -10,6 +10,11 @@ Recent changes
 
 .. currentmodule:: python_gtmetrix2
 
+0.3.1
+-----
+
+* Added an option to specify report resources by dict key instead of URL.
+
 0.3.0
 -----
 

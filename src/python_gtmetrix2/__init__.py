@@ -372,8 +372,13 @@ class Report(Object):
         with the latter in case a file is too big, though.
 
         :param str name:
-            Name of the desired resource.
-            You can find full list at the GTmetrix API documentation:
+            Name of the desired resource. It can be either *key* of
+            ``report["links"]`` dict (such as "report_pdf", "lighthouse", or
+            "har"), or a *filename* to be appended to URL (such as
+            "report.pdf", "lighthouse.json", or "net.har").  List of possible
+            *keys* you can find by inspecting the ``report["links"]`` dict, and
+            full list of possible *filenames* - at the GTmetrix API
+            documentation:
             <https://gtmetrix.com/api/docs/2.0/#api-report-resource>
 
         :param destination:
@@ -386,8 +391,15 @@ class Report(Object):
         :type destination: None or str or a file-like object
 
         """
+        if name in self["links"]:
+            url = self["links"][name]
+            if url.startswith(self._requestor.base_url):
+                url = url[len(self._requestor.base_url) :]
+            # TODO: fetching from external URL
+        else:
+            url = "reports/%s/resources/%s" % (self["id"], name)
         (response, response_data) = self._requestor.request(
-            "reports/%s/resources/%s" % (self["id"], name),
+            url,
             follow_redirects=True,
             return_data=False,
         )
